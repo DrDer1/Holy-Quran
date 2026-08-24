@@ -2,80 +2,123 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-    <meta name="theme-color" content="#fcf9f2">
-    <meta name="description" content="المصحف الكريم - قراءة القرآن بدون إنترنت">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المصحف الكريم - النسخة الورقية</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="192.png">
     <link rel="apple-touch-icon" href="192.png">
-    <title>المصحف الكريم</title>
+    <meta name="theme-color" content="#f4e4c1">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="app-container" id="app">
-    <!-- HEADER -->
-    <div class="header">
-        <h1>﷽</h1>
-        <div class="subtitle">المصحف الكريم — القراءة فقط</div>
-        <div class="last-read" id="lastReadBtn" onclick="goToLastRead()">📖 استئناف القراءة</div>
-    </div>
-
-    <!-- CONTROLS -->
-    <div class="controls">
-        <div class="font-controls">
-            <button class="font-size-btn" onclick="changeFontSize(-2)">A-</button>
-            <span id="fontSizeDisplay" style="color:#6b5a3e;min-width:40px;text-align:center;">100%</span>
-            <button class="font-size-btn" onclick="changeFontSize(2)">A+</button>
+    <!-- الغلاف الأمامي للمصحف -->
+    <div id="cover" class="quran-cover">
+        <div class="cover-decoration">
+            <div class="cover-pattern-top"></div>
+            <div class="cover-content">
+                <div class="cover-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                <h1 class="cover-title">المصحف الكريم</h1>
+                <div class="cover-subtitle">برواية حفص عن عاصم</div>
+                <div class="cover-ornament">۞</div>
+            </div>
+            <div class="cover-pattern-bottom"></div>
         </div>
-        <button onclick="resetFontSize()" style="font-size:0.8em;">↺ إعادة</button>
+        <button id="openQuran" class="open-btn">افتح المصحف</button>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('surah')" id="tabSurah">📖 السور</button>
-        <button class="tab-btn" onclick="switchTab('juz')" id="tabJuz">📚 الأجزاء</button>
-        <button class="tab-btn" onclick="switchTab('search')" id="tabSearch">🔍 بحث</button>
-    </div>
-
-    <!-- TAB: SURAH LIST -->
-    <div class="tab-content active" id="tabContentSurah">
-        <div class="surah-list" id="surahList"></div>
-    </div>
-
-    <!-- TAB: JUZ LIST -->
-    <div class="tab-content" id="tabContentJuz">
-        <div class="section-title">اختر الجزء</div>
-        <div class="juz-grid" id="juzGrid"></div>
-        <div id="juzResult" style="margin-top:15px;"></div>
-    </div>
-
-    <!-- TAB: SEARCH -->
-    <div class="tab-content" id="tabContentSearch">
-        <div class="section-title">البحث في القرآن</div>
-        <div class="search-section">
-            <input type="text" id="searchText" placeholder="🔍 ابحث بكلمة أو نص..." onkeyup="if(event.key==='Enter') doSearch()">
-            <input type="number" id="searchAyah" placeholder="رقم الآية" min="1" onkeyup="if(event.key==='Enter') doSearch()">
-            <input type="number" id="searchJuz" placeholder="رقم الجزء (1-30)" min="1" max="30" onkeyup="if(event.key==='Enter') doSearch()">
-            <button class="search-btn" onclick="doSearch()">🔍 بحث</button>
-            <button class="clear-search" onclick="clearSearch()">✕ مسح</button>
+    <!-- المصحف الرئيسي -->
+    <div id="mainQuran" class="main-quran hidden">
+        <!-- شريط علوي أنيق -->
+        <div class="top-bar">
+            <button id="backToCover" class="icon-btn" title="الغلاف">📕</button>
+            <button id="showSurahs" class="icon-btn" title="فهرس السور">📚</button>
+            <button id="showJuz" class="icon-btn" title="فهرس الأجزاء">📖</button>
+            <button id="showSearch" class="icon-btn" title="البحث">🔍</button>
+            <div class="font-adjust">
+                <button id="fontPlus" class="font-btn">أ+</button>
+                <button id="fontMinus" class="font-btn">أ-</button>
+            </div>
         </div>
-        <div id="searchResults"></div>
+
+        <!-- صفحة المصحف -->
+        <div class="quran-page-container">
+            <div class="page-left">
+                <div class="page-border">
+                    <div class="page-inner-border">
+                        <div class="page-content" id="pageLeftContent">
+                            <!-- المحتوى الأيسر -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-right">
+                <div class="page-border">
+                    <div class="page-inner-border">
+                        <div class="page-content" id="pageRightContent">
+                            <!-- المحتوى الأيمن -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط تنقل سفلي -->
+        <div class="bottom-nav">
+            <button id="prevPage" class="nav-btn">→ الصفحة السابقة</button>
+            <div class="page-indicator">
+                <span id="currentPageNum">1</span> / <span id="totalPages">604</span>
+            </div>
+            <button id="nextPage" class="nav-btn">الصفحة التالية ←</button>
+        </div>
+
+        <!-- نافذة فهرس السور -->
+        <div id="surahIndex" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>فهرس السور</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="surah-index-list" id="surahIndexList"></div>
+            </div>
+        </div>
+
+        <!-- نافذة فهرس الأجزاء -->
+        <div id="juzIndex" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>فهرس الأجزاء</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="juz-index-list" id="juzIndexList"></div>
+            </div>
+        </div>
+
+        <!-- نافذة البحث -->
+        <div id="searchModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>البحث في المصحف</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="search-options">
+                    <select id="searchType">
+                        <option value="text">بحث بالنص</option>
+                        <option value="surah">رقم السورة</option>
+                        <option value="ayah">رقم الآية</option>
+                        <option value="juz">رقم الجزء</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="اكتب للبحث...">
+                    <button id="searchBtn">بحث</button>
+                </div>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </div>
+
+        <!-- علامة حفظ المكان -->
+        <div id="bookmark" class="bookmark hidden">📑</div>
     </div>
 
-    <!-- AYAH SCREEN (المصحف) -->
-    <div class="ayah-screen" id="ayahScreen">
-        <button class="back-btn" onclick="closeAyahScreen()">↩ العودة</button>
-        <div class="surah-title" id="surahTitle"></div>
-        <div class="ayah-list" id="ayahList"></div>
-    </div>
-
-    <!-- SAVE INDICATOR -->
-    <div class="save-indicator" id="saveIndicator">✓ تم الحفظ</div>
-</div>
-
-<script src="quran.js"></script>
-<script src="app.js"></script>
-
+    <script src="quran.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
