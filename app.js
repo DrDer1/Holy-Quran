@@ -244,33 +244,50 @@ function displayPage(pageNumber) {
         return;
     }
     
-    // عرض رأس السورة إذا كانت بداية سورة
-    const firstAyah = pageAyahs[0];
-    if (firstAyah.ayah === 1) {
-        displaySurahHeader(content, firstAyah.surah);
-    }
-    
-    // إنشاء حاوية واحدة للآيات المتتالية
-    const ayahsContainer = document.createElement('div');
-    ayahsContainer.style.display = 'inline';
-    ayahsContainer.style.textAlign = 'justify';
-    
-    // عرض الآيات متتالية خلف بعضها
+    // تجميع الآيات حسب السورة
+    const surahGroups = {};
     pageAyahs.forEach(ayah => {
-        const ayahText = document.createElement('span');
-        ayahText.className = 'ayah-text';
-        ayahText.textContent = ayah.text + ' ';
-        
-        const ayahNumber = document.createElement('span');
-        ayahNumber.className = 'ayah-number';
-        ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
-        
-        ayahsContainer.appendChild(ayahText);
-        ayahsContainer.appendChild(ayahNumber);
-        ayahsContainer.appendChild(document.createTextNode(' '));
+        if (!surahGroups[ayah.surah]) {
+            surahGroups[ayah.surah] = [];
+        }
+        surahGroups[ayah.surah].push(ayah);
     });
     
-    content.appendChild(ayahsContainer);
+    // عرض كل سورة على حدة
+    Object.keys(surahGroups).forEach(surahNumber => {
+        const surahNum = parseInt(surahNumber);
+        const surahAyahs = surahGroups[surahNumber];
+        
+        // عرض اسم السورة
+        displaySurahHeader(content, surahNum);
+        
+        // إنشاء حاوية للآيات
+        const ayahsContainer = document.createElement('div');
+        ayahsContainer.style.display = 'inline';
+        ayahsContainer.style.textAlign = 'justify';
+        
+        // عرض الآيات متتالية
+        surahAyahs.forEach(ayah => {
+            const ayahText = document.createElement('span');
+            ayahText.className = 'ayah-text';
+            ayahText.textContent = ayah.text + ' ';
+            
+            const ayahNumber = document.createElement('span');
+            ayahNumber.className = 'ayah-number';
+            ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
+            
+            ayahsContainer.appendChild(ayahText);
+            ayahsContainer.appendChild(ayahNumber);
+            ayahsContainer.appendChild(document.createTextNode(' '));
+        });
+        
+        content.appendChild(ayahsContainer);
+        
+        // إضافة مسافة بين السور
+        const spacer = document.createElement('div');
+        spacer.style.height = '30px';
+        content.appendChild(spacer);
+    });
     
     // حفظ التقدم
     if (pageAyahs.length > 0) {
