@@ -1,9 +1,7 @@
-/* ===== تحميل الخطوط ===== */
-@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
-
+/* ===== تحميل الخط العثماني ===== */
 @font-face {
-    font-family: 'QuranFont';
-    src: local('Amiri Quran'), local('KFGQPC Uthmanic Script HAFS'), local('Scheherazade New'), local('Amiri');
+    font-family: 'UthmanicHafs';
+    src: url('KFGQPC Uthmanic Script HAFS Regular.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -45,7 +43,7 @@ html, body {
 }
 
 body {
-    font-family: 'Amiri Quran', 'QuranFont', 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', 'Amiri', serif;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
     direction: rtl;
     user-select: none;
     -webkit-user-select: none;
@@ -180,6 +178,7 @@ body {
     font-size: 19px;
     font-weight: bold;
     color: #f0f0f0;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .close-menu-btn {
@@ -221,7 +220,7 @@ body {
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s;
-    font-family: inherit;
+    font-family: 'UthmanicHafs', serif;
     text-align: right;
     width: 100%;
 }
@@ -257,6 +256,7 @@ body {
     font-size: 14px;
     color: #888888;
     text-align: center;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .font-buttons {
@@ -273,7 +273,7 @@ body {
     color: #f0f0f0;
     font-size: 17px;
     cursor: pointer;
-    font-family: inherit;
+    font-family: 'UthmanicHafs', serif;
     transition: all 0.2s;
 }
 
@@ -366,6 +366,7 @@ body {
     letter-spacing: 4px;
     text-align: center;
     line-height: 2;
+    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== صفحة المصحف ===== */
@@ -410,7 +411,10 @@ body {
     flex-direction: column;
     justify-content: center;
     position: relative;
-    font-family: 'Amiri Quran', 'QuranFont', 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', 'Amiri', serif;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', 'Amiri', serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .page-number {
@@ -427,6 +431,7 @@ body {
     font-weight: bold;
     letter-spacing: 1px;
     z-index: 5;
+    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== عنوان السورة ===== */
@@ -443,7 +448,9 @@ body {
     position: relative;
     flex-shrink: 0;
     letter-spacing: 1px;
-    font-family: 'Amiri Quran', 'QuranFont', 'Scheherazade New', 'Amiri', serif;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .surah-header::before,
@@ -472,7 +479,9 @@ body {
     text-align: center;
     flex-shrink: 0;
     letter-spacing: 0.5px;
-    font-family: 'Amiri Quran', 'QuranFont', 'Scheherazade New', 'Amiri', serif;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ===== الآيات ===== */
@@ -480,9 +489,13 @@ body {
     display: inline;
     text-align: justify;
     line-height: 2.1;
-    font-family: 'Amiri Quran', 'QuranFont', 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', 'Amiri', serif;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
     word-spacing: normal;
     letter-spacing: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
 }
 
 .ayah-text {
@@ -490,9 +503,12 @@ body {
     color: #f0f0f0;
     font-size: inherit;
     line-height: inherit;
-    font-family: inherit;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
     unicode-bidi: embed;
     direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .ayah-number {
@@ -510,7 +526,7 @@ body {
     vertical-align: middle;
     background: #0a0a0a;
     flex-shrink: 0;
-    font-family: 'QuranFont', 'Amiri', serif;
+    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== صفحة الإهداء ===== */
@@ -553,6 +569,7 @@ body {
     font-weight: bold;
     letter-spacing: 3px;
     flex-shrink: 0;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .dedication-text {
@@ -569,6 +586,7 @@ body {
     border: 1px solid #333333;
     border-radius: 6px;
     background: #0a0a0a;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .dedication-text p {
@@ -587,7 +605,7 @@ body {
     color: #f0f0f0;
     font-size: 15px;
     cursor: pointer;
-    font-family: inherit;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .back-btn:hover {
@@ -633,6 +651,7 @@ body {
     font-size: 19px;
     color: #f0f0f0;
     margin: 0;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .close-modal {
@@ -684,6 +703,7 @@ body {
     font-size: 15px;
     min-width: 36px;
     text-align: center;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .index-name {
@@ -691,11 +711,13 @@ body {
     font-size: 17px;
     flex: 1;
     text-align: center;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .index-info {
     color: #888888;
     font-size: 12px;
+    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== البحث ===== */
@@ -713,7 +735,7 @@ body {
     border: 1px solid #2a2a2a;
     border-radius: 8px;
     color: #f0f0f0;
-    font-family: inherit;
+    font-family: 'UthmanicHafs', serif;
     font-size: 15px;
 }
 
@@ -728,7 +750,7 @@ body {
     border: none;
     border-radius: 8px;
     color: #000000;
-    font-family: inherit;
+    font-family: 'UthmanicHafs', serif;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
@@ -747,6 +769,7 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     color: #f0f0f0;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .search-result-item:hover {
@@ -763,6 +786,7 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     color: #f0f0f0;
+    font-family: 'UthmanicHafs', serif;
 }
 
 .bookmark-item:hover {
@@ -774,6 +798,7 @@ body {
     color: #888888;
     padding: 25px;
     font-size: 16px;
+    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== حركات التنقل ===== */
