@@ -240,7 +240,7 @@ function displayPage(pageNumber) {
     content.style.lineHeight = (currentFontSize * 1.5) + 'rem';
     
     if (pageAyahs.length === 0) {
-        content.innerHTML = '<div style="text-align:center;color:#999;padding-top:50%;">نهاية المصحف</div>';
+        content.innerHTML = '<div style="text-align:center;color:#999;">نهاية المصحف</div>';
         return;
     }
     
@@ -250,23 +250,27 @@ function displayPage(pageNumber) {
         displaySurahHeader(content, firstAyah.surah);
     }
     
-    // عرض الآيات
+    // إنشاء حاوية واحدة للآيات المتتالية
+    const ayahsContainer = document.createElement('div');
+    ayahsContainer.style.display = 'inline';
+    ayahsContainer.style.textAlign = 'justify';
+    
+    // عرض الآيات متتالية خلف بعضها
     pageAyahs.forEach(ayah => {
-        const ayahContainer = document.createElement('div');
-        ayahContainer.className = 'ayah-container';
-        
         const ayahText = document.createElement('span');
         ayahText.className = 'ayah-text';
-        ayahText.textContent = ayah.text;
+        ayahText.textContent = ayah.text + ' ';
         
         const ayahNumber = document.createElement('span');
         ayahNumber.className = 'ayah-number';
         ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
         
-        ayahContainer.appendChild(ayahText);
-        ayahContainer.appendChild(ayahNumber);
-        content.appendChild(ayahContainer);
+        ayahsContainer.appendChild(ayahText);
+        ayahsContainer.appendChild(ayahNumber);
+        ayahsContainer.appendChild(document.createTextNode(' '));
     });
+    
+    content.appendChild(ayahsContainer);
     
     // حفظ التقدم
     if (pageAyahs.length > 0) {
