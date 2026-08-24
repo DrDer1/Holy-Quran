@@ -1,12 +1,12 @@
 {
-    "name": "المصحف الكريم - النسخة الورقية",
+    "name": "المصحف الكريم - القراءة العثمانية",
     "short_name": "المصحف",
-    "description": "تطبيق المصحف الكريم بتصميم ورقي تقليدي مع ميزات رقمية",
+    "description": "تطبيق المصحف الكريم بتصميم ورقي داكن مريح للعين",
     "start_url": "/",
     "display": "standalone",
     "orientation": "portrait",
-    "background_color": "#f4e4c1",
-    "theme_color": "#1a472a",
+    "background_color": "#0a0a0a",
+    "theme_color": "#1a1a1a",
     "lang": "ar",
     "dir": "rtl",
     "icons": [
@@ -24,22 +24,5 @@
         }
     ],
     "categories": ["books", "education", "lifestyle"],
-    "prefer_related_applications": false,
-    "shortcuts": [
-        {
-            "name": "استئناف القراءة",
-            "url": "/?action=resume",
-            "description": "العودة إلى آخر موضع قراءة"
-        },
-        {
-            "name": "فهرس السور",
-            "url": "/?action=surahs",
-            "description": "فتح فهرس السور"
-        },
-        {
-            "name": "البحث",
-            "url": "/?action=search",
-            "description": "البحث في المصحف"
-        }
-    ]
+    "prefer_related_applications": false
 }
