@@ -65,7 +65,7 @@ async function loadQuran() {
                 quranData.push({
                     surah: surah.id,
                     ayah: ayah.id,
-                    text: ayah.text
+                    text: ayah.text.trim()
                 });
             });
         });
@@ -367,59 +367,71 @@ function displayPage(pageNumber) {
         return;
     }
     
-    // تجميع الآيات حسب السورة
-    const surahGroups = {};
-    pageAyahs.forEach(ayah => {
-        if (!surahGroups[ayah.surah]) {
-            surahGroups[ayah.surah] = [];
-        }
-        surahGroups[ayah.surah].push(ayah);
-    });
-    
     // تحديث معلومات الشريط العلوي
     const firstAyah = pageAyahs[0];
     currentSurahNumber = firstAyah.surah;
     currentJuzNumber = getJuzNumber(firstAyah.surah, firstAyah.ayah);
     updateTopBar();
     
-    // عرض كل سورة
-    Object.keys(surahGroups).forEach(surahNumber => {
-        const surahNum = parseInt(surahNumber);
-        const surahAyahs = surahGroups[surahNumber];
+    // عرض الآيات متتالية بدون عناوين سور في منتصف الصفحة
+    const ayahsContainer = document.createElement('div');
+    ayahsContainer.className = 'ayahs-container';
+    
+    let previousSurah = null;
+    
+    pageAyahs.forEach(ayah => {
+        // عرض عنوان السورة فقط إذا كانت بداية سورة جديدة
+        if (ayah.surah !== previousSurah) {
+            // إغلاق الحاوية السابقة وفتح جديدة
+            if (previousSurah !== null) {
+                content.appendChild(ayahsContainer);
+                const spacer = document.createElement('div');
+                spacer.style.height = '20px';
+                content.appendChild(spacer);
+                
+                // إنشاء حاوية جديدة
+                const newContainer = document.createElement('div');
+                newContainer.className = 'ayahs-container';
+                displaySurahHeader(content, ayah.surah);
+                content.appendChild(newContainer);
+                
+                // استخدام الحاوية الجديدة
+                appendAyahToContainer(newContainer, ayah);
+            } else {
+                // أول سورة في الصفحة
+                displaySurahHeader(content, ayah.surah);
+                appendAyahToContainer(ayahsContainer, ayah);
+            }
+        } else {
+            // نفس السورة - إضافة الآية للحاوية الحالية
+            appendAyahToContainer(ayahsContainer, ayah);
+        }
         
-        // عرض اسم السورة
-        displaySurahHeader(content, surahNum);
-        
-        // عرض الآيات متتالية
-        const ayahsContainer = document.createElement('div');
-        ayahsContainer.className = 'ayahs-container';
-        
-        surahAyahs.forEach(ayah => {
-            const ayahText = document.createElement('span');
-            ayahText.className = 'ayah-text';
-            ayahText.textContent = ayah.text + ' ';
-            
-            const ayahNumber = document.createElement('span');
-            ayahNumber.className = 'ayah-number';
-            ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
-            
-            ayahsContainer.appendChild(ayahText);
-            ayahsContainer.appendChild(ayahNumber);
-            ayahsContainer.appendChild(document.createTextNode(' '));
-        });
-        
-        content.appendChild(ayahsContainer);
-        
-        // مسافة بين السور
-        const spacer = document.createElement('div');
-        spacer.style.height = '16px';
-        content.appendChild(spacer);
+        previousSurah = ayah.surah;
     });
+    
+    // إضافة الحاوية الأخيرة
+    content.appendChild(ayahsContainer);
     
     // حفظ التقدم
     if (pageAyahs.length > 0) {
         saveProgress(pageAyahs[0]);
     }
+}
+
+// ===== إضافة آية إلى حاوية =====
+function appendAyahToContainer(container, ayah) {
+    const ayahText = document.createElement('span');
+    ayahText.className = 'ayah-text';
+    ayahText.textContent = ayah.text;
+    
+    const ayahNumber = document.createElement('span');
+    ayahNumber.className = 'ayah-number';
+    ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
+    
+    container.appendChild(ayahText);
+    container.appendChild(ayahNumber);
+    container.appendChild(document.createTextNode(' '));
 }
 
 // ===== عرض رأس السورة =====
