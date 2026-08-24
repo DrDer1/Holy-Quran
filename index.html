@@ -14,8 +14,22 @@
     <!-- الحاوية الرئيسية -->
     <div id="mainContainer" class="main-container">
         
+        <!-- صفحة البداية -->
+        <div id="startPage" class="start-page">
+            <div class="start-frame">
+                <div class="start-ornament-top">❁</div>
+                <div class="start-content">
+                    <div class="start-inner-frame">
+                        <h1 class="start-title">الْقُرْآنُ الْكَرِيمُ</h1>
+                        <div class="start-subtitle">رَبِّ زِدْنِي عِلْمًا</div>
+                    </div>
+                </div>
+                <div class="start-ornament-bottom">❁</div>
+            </div>
+        </div>
+        
         <!-- الشريط العلوي -->
-        <header class="top-bar">
+        <header class="top-bar hidden" id="topBar">
             <button id="searchBtn" class="top-btn" aria-label="بحث">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
@@ -84,12 +98,14 @@
         </div>
         
         <!-- منطقة صفحة المصحف -->
-        <main class="quran-area">
+        <main class="quran-area hidden" id="quranArea">
             <div id="quranPage" class="quran-page">
                 <div class="page-frame-outer">
                     <div class="page-frame-inner">
-                        <div class="page-content" id="pageContent">
-                            <!-- محتوى الصفحة -->
+                        <div class="page-text-border">
+                            <div class="page-content" id="pageContent">
+                                <!-- محتوى الصفحة -->
+                            </div>
                         </div>
                         <div class="page-number" id="pageNumber">١</div>
                     </div>
