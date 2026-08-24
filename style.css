@@ -20,250 +20,226 @@ body {
     height: 100vh;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* ===== الغلاف الأمامي ===== */
-.quran-cover {
+/* ===== الحاوية الرئيسية ===== */
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== زر القائمة ===== */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    background: #1a472a;
+    color: #c9a84c;
+    border: 2px solid #c9a84c;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-toggle:hover {
+    background: #c9a84c;
+    color: #1a472a;
+    transform: rotate(90deg);
+}
+
+/* ===== القائمة الجانبية ===== */
+.side-menu {
     position: fixed;
     top: 0;
-    left: 0;
+    right: -300px;
+    width: 300px;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a472a, #2d5a27);
+    z-index: 200;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-menu.open {
     right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #1a472a 0%, #2d5a27 25%, #1a472a 50%, #2d5a27 75%, #1a472a 100%);
+}
+
+.menu-header {
+    padding: 20px;
+    border-bottom: 2px solid #c9a84c;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: coverOpen 0.5s ease;
-}
-
-.cover-decoration {
-    width: 80%;
-    max-width: 600px;
-    height: 85vh;
-    background: linear-gradient(135deg, #0d2818 0%, #1a472a 50%, #0d2818 100%);
-    border: 8px solid #c9a84c;
-    border-radius: 15px;
-    position: relative;
-    box-shadow: 
-        0 0 50px rgba(0,0,0,0.8),
-        inset 0 0 100px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-}
-
-.cover-pattern-top,
-.cover-pattern-bottom {
-    width: 80%;
-    height: 60px;
-    background: repeating-linear-gradient(
-        45deg,
-        #c9a84c 0px,
-        #c9a84c 2px,
-        transparent 2px,
-        transparent 10px
-    );
-    opacity: 0.6;
-}
-
-.cover-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-}
-
-.cover-bismillah {
     color: #c9a84c;
-    font-size: 1.8rem;
-    text-align: center;
 }
 
-.cover-title {
-    color: #f4e4c1;
-    font-size: 4rem;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    letter-spacing: 2px;
+.menu-header h3 {
+    font-size: 1.3rem;
 }
 
-.cover-subtitle {
-    color: #c9a84c;
-    font-size: 1.2rem;
-}
-
-.cover-ornament {
-    color: #c9a84c;
-    font-size: 3rem;
-    animation: glow 2s ease-in-out infinite;
-}
-
-.open-btn {
-    padding: 15px 40px;
-    background: linear-gradient(135deg, #c9a84c, #e8c96a);
-    color: #1a472a;
+.close-menu {
+    background: transparent;
     border: none;
-    border-radius: 30px;
-    font-size: 1.5rem;
-    font-family: inherit;
+    color: #c9a84c;
+    font-size: 2rem;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
 
-.open-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+.close-menu:hover {
+    transform: rotate(90deg);
+    color: #e8c96a;
 }
 
-/* ===== المصحف الرئيسي ===== */
-.main-quran {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #f4e4c1;
-    display: flex;
-    flex-direction: column;
+.menu-items {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
 }
 
-/* الشريط العلوي */
-.top-bar {
-    background: linear-gradient(135deg, #1a472a, #2d5a27);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    z-index: 100;
-}
-
-.icon-btn {
+.menu-item {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0;
     background: transparent;
     border: 2px solid #c9a84c;
     color: #c9a84c;
-    padding: 8px 15px;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     transition: all 0.3s;
 }
 
-.icon-btn:hover {
+.menu-item:hover {
     background: #c9a84c;
     color: #1a472a;
+    transform: translateX(-5px);
 }
 
-.font-adjust {
-    margin-right: auto;
+.menu-icon {
+    font-size: 1.3rem;
+}
+
+.menu-divider {
+    height: 2px;
+    background: #c9a84c;
+    margin: 20px 0;
+    opacity: 0.5;
+}
+
+.font-controls {
+    padding: 10px 0;
+    color: #c9a84c;
+}
+
+.font-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.font-buttons {
     display: flex;
     gap: 10px;
 }
 
 .font-btn {
+    flex: 1;
+    padding: 10px;
     background: #c9a84c;
     border: none;
     color: #1a472a;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1.2rem;
+    font-family: inherit;
     font-weight: bold;
     transition: all 0.3s;
 }
 
 .font-btn:hover {
-    transform: scale(1.1);
     background: #e8c96a;
+    transform: scale(1.05);
 }
 
 /* ===== صفحة المصحف ===== */
-.quran-page-container {
-    flex: 1;
+.quran-page {
+    width: 85%;
+    max-width: 700px;
+    height: 90vh;
     display: flex;
-    gap: 20px;
-    padding: 20px;
-    background: #8b6914;
-    position: relative;
-    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+    cursor: grab;
+    touch-action: pan-y;
 }
 
-.quran-page-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 2px;
+.quran-page:active {
+    cursor: grabbing;
+}
+
+.page-frame {
+    width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, transparent, #6b4f10, transparent);
-    transform: translateX(-50%);
-    z-index: 1;
-}
-
-.page-left,
-.page-right {
-    flex: 1;
     background: #f4e4c1;
-    border-radius: 5px;
+    border: 5px solid #c9a84c;
+    border-radius: 10px;
     box-shadow: 
-        inset 0 0 30px rgba(139,105,20,0.3),
-        0 5px 20px rgba(0,0,0,0.4);
+        inset 0 0 40px rgba(139,105,20,0.2),
+        0 10px 40px rgba(0,0,0,0.5);
     position: relative;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.page-left {
-    transform-origin: right center;
-    animation: pageTurnLeft 0.3s ease;
-}
-
-.page-right {
-    transform-origin: left center;
-    animation: pageTurnRight 0.3s ease;
-}
-
-.page-border {
+.page-inner-frame {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    bottom: 15px;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
     border: 2px solid #c9a84c;
-    border-radius: 3px;
-}
-
-.page-inner-border {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border: 1px solid #c9a84c;
-    border-radius: 2px;
-    padding: 20px;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 .page-content {
     width: 100%;
     height: 100%;
+    padding: 30px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: #c9a84c #f4e4c1;
-    padding: 10px;
     text-align: center;
+    font-size: 1.8rem;
+    line-height: 2.5;
+    color: #1a1a1a;
 }
 
 .page-content::-webkit-scrollbar {
@@ -279,79 +255,65 @@ body {
     border-radius: 4px;
 }
 
+/* ===== رقم الصفحة ===== */
+.page-number {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a472a;
+    color: #c9a84c;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
 /* ===== تنسيق الآيات ===== */
 .surah-header {
     color: #1a472a;
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 20px;
-    padding: 10px;
-    border-bottom: 2px solid #c9a84c;
+    padding: 15px;
+    border: 2px solid #c9a84c;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f4e4c1, #e8d5a8);
 }
 
 .surah-bismillah {
     color: #1a472a;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     margin: 20px 0;
+    font-weight: bold;
+}
+
+.ayah-container {
+    margin: 10px 0;
+    padding: 5px;
 }
 
 .ayah-text {
     display: inline;
-    font-size: 1.8rem;
-    line-height: 2.5;
-    color: #1a1a1a;
+    font-size: inherit;
+    line-height: inherit;
     text-align: justify;
-    margin: 10px 0;
 }
 
 .ayah-number {
     display: inline-block;
     margin: 0 8px;
     color: #c9a84c;
-    font-size: 1.2rem;
+    font-size: 0.7em;
     font-weight: bold;
     border: 2px solid #c9a84c;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    line-height: 31px;
+    width: 30px;
+    height: 30px;
+    line-height: 26px;
     text-align: center;
     vertical-align: middle;
-}
-
-/* ===== التنقل السفلي ===== */
-.bottom-nav {
-    background: linear-gradient(135deg, #1a472a, #2d5a27);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-    z-index: 100;
-}
-
-.nav-btn {
-    background: #c9a84c;
-    border: none;
-    color: #1a472a;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-
-.nav-btn:hover {
-    background: #e8c96a;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.page-indicator {
-    color: #c9a84c;
-    font-size: 1.3rem;
-    font-weight: bold;
 }
 
 /* ===== النوافذ المنبثقة ===== */
@@ -362,7 +324,7 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,0.7);
-    z-index: 200;
+    z-index: 300;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -371,13 +333,15 @@ body {
 
 .modal-content {
     background: #f4e4c1;
-    width: 80%;
+    width: 85%;
     max-width: 600px;
     max-height: 80vh;
     border-radius: 15px;
     border: 5px solid #c9a84c;
     overflow: hidden;
     animation: slideUp 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
@@ -410,15 +374,15 @@ body {
     transform: rotate(90deg);
 }
 
-.surah-index-list,
-.juz-index-list {
+.modal-body {
     padding: 20px;
     overflow-y: auto;
-    max-height: 60vh;
+    flex: 1;
 }
 
+/* ===== قوائم السور والأجزاء ===== */
 .surah-item {
-    padding: 10px;
+    padding: 12px;
     margin: 5px 0;
     background: white;
     border-radius: 8px;
@@ -427,120 +391,113 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid #e0d5b8;
 }
 
 .surah-item:hover {
     background: #e8c96a;
     transform: translateX(-5px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
 }
 
 .surah-number {
     background: #1a472a;
     color: #c9a84c;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.surah-name {
+    font-weight: bold;
+    color: #1a472a;
+    flex: 1;
+    margin: 0 10px;
+}
+
+.surah-info {
+    font-size: 0.8rem;
+    color: #666;
 }
 
 /* ===== البحث ===== */
-.search-options {
-    padding: 20px;
+.search-box {
     display: flex;
+    flex-direction: column;
     gap: 10px;
+    margin-bottom: 20px;
 }
 
-.search-options select,
-.search-options input {
-    padding: 10px;
+.search-box select,
+.search-box input {
+    padding: 12px;
     border: 2px solid #c9a84c;
     border-radius: 8px;
     font-family: inherit;
     font-size: 1rem;
+    background: white;
 }
 
-.search-options input {
-    flex: 1;
-}
-
-.search-options button {
+.search-box button {
     background: #1a472a;
     color: #c9a84c;
     border: none;
-    padding: 10px 20px;
+    padding: 12px;
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+}
+
+.search-box button:hover {
+    background: #2d5a27;
+    transform: translateY(-2px);
 }
 
 .search-results {
-    padding: 0 20px 20px;
     overflow-y: auto;
-    max-height: 40vh;
 }
 
 .search-result-item {
     background: white;
-    padding: 10px;
+    padding: 12px;
     margin: 5px 0;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
+    border: 1px solid #e0d5b8;
 }
 
 .search-result-item:hover {
     background: #e8c96a;
+    transform: translateX(-5px);
 }
 
-/* ===== العلامة المرجعية ===== */
-.bookmark {
-    position: fixed;
-    top: 80px;
-    right: 10px;
-    background: #c9a84c;
+/* ===== حول التطبيق ===== */
+.about-content {
+    text-align: center;
+    padding: 30px;
+}
+
+.about-content h3 {
     color: #1a472a;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    z-index: 150;
-    animation: bounce 1s ease infinite;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.about-content p {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 10px 0;
 }
 
 /* ===== الحركات ===== */
-@keyframes coverOpen {
-    from {
-        transform: scale(0.5);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes pageTurnLeft {
-    from {
-        transform: rotateY(0deg);
-    }
-    to {
-        transform: rotateY(-5deg);
-    }
-}
-
-@keyframes pageTurnRight {
-    from {
-        transform: rotateY(0deg);
-    }
-    to {
-        transform: rotateY(5deg);
-    }
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -561,106 +518,115 @@ body {
     }
 }
 
-@keyframes glow {
-    0%, 100% {
-        text-shadow: 0 0 10px #c9a84c;
+@keyframes pageTurnNext {
+    from {
+        transform: translateX(0);
+        opacity: 1;
     }
     50% {
-        text-shadow: 0 0 30px #e8c96a, 0 0 50px #c9a84c;
+        transform: translateX(-50%);
+        opacity: 0.5;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
     }
 }
 
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
+@keyframes pageTurnPrev {
+    from {
+        transform: translateX(0);
+        opacity: 1;
     }
     50% {
-        transform: translateY(-10px);
+        transform: translateX(50%);
+        opacity: 0.5;
     }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.page-turning-next {
+    animation: pageTurnNext 0.5s ease;
+}
+
+.page-turning-prev {
+    animation: pageTurnPrev 0.5s ease;
 }
 
 /* ===== تصميم متجاوب ===== */
 @media (max-width: 768px) {
-    .quran-page-container {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
+    .quran-page {
+        width: 95%;
+        height: 85vh;
     }
     
-    .page-left,
-    .page-right {
-        flex: 1;
-        min-height: 40vh;
-    }
-    
-    .cover-title {
-        font-size: 2.5rem;
-    }
-    
-    .ayah-text {
+    .page-content {
+        padding: 20px;
         font-size: 1.4rem;
         line-height: 2;
     }
     
-    .ayah-number {
-        width: 30px;
-        height: 30px;
-        line-height: 26px;
-        font-size: 1rem;
+    .page-inner-frame {
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
     }
     
-    .top-bar {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px;
-    }
-    
-    .bottom-nav {
-        flex-direction: column;
-        gap: 10px;
-        padding: 8px;
-    }
-    
-    .modal-content {
-        width: 95%;
-        max-height: 90vh;
-    }
-}
-
-@media (max-width: 480px) {
-    .cover-title {
-        font-size: 2rem;
-    }
-    
-    .cover-bismillah {
+    .surah-header {
         font-size: 1.2rem;
-    }
-    
-    .ayah-text {
-        font-size: 1.2rem;
-        line-height: 1.8;
+        padding: 10px;
     }
     
     .ayah-number {
         width: 25px;
         height: 25px;
         line-height: 21px;
-        font-size: 0.8rem;
+        font-size: 0.6em;
         margin: 0 4px;
     }
     
+    .side-menu {
+        width: 250px;
+        right: -250px;
+    }
+    
+    .menu-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+        top: 15px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .quran-page {
+        width: 98%;
+        height: 80vh;
+    }
+    
+    .page-content {
+        padding: 15px;
+        font-size: 1.2rem;
+        line-height: 1.8;
+    }
+    
     .surah-header {
-        font-size: 1.5rem;
+        font-size: 1rem;
     }
     
-    .page-inner-border {
-        padding: 10px;
+    .ayah-number {
+        width: 22px;
+        height: 22px;
+        line-height: 18px;
+        font-size: 0.5em;
     }
     
-    .page-border {
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        bottom: 10px;
+    .modal-content {
+        width: 95%;
     }
 }
