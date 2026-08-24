@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>المصحف الكريم - النسخة الورقية</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="192.png">
@@ -11,111 +11,130 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- الغلاف الأمامي للمصحف -->
-    <div id="cover" class="quran-cover">
-        <div class="cover-decoration">
-            <div class="cover-pattern-top"></div>
-            <div class="cover-content">
-                <div class="cover-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-                <h1 class="cover-title">المصحف الكريم</h1>
-                <div class="cover-subtitle">برواية حفص عن عاصم</div>
-                <div class="cover-ornament">۞</div>
-            </div>
-            <div class="cover-pattern-bottom"></div>
-        </div>
-        <button id="openQuran" class="open-btn">افتح المصحف</button>
-    </div>
-
     <!-- المصحف الرئيسي -->
-    <div id="mainQuran" class="main-quran hidden">
-        <!-- شريط علوي أنيق -->
-        <div class="top-bar">
-            <button id="backToCover" class="icon-btn" title="الغلاف">📕</button>
-            <button id="showSurahs" class="icon-btn" title="فهرس السور">📚</button>
-            <button id="showJuz" class="icon-btn" title="فهرس الأجزاء">📖</button>
-            <button id="showSearch" class="icon-btn" title="البحث">🔍</button>
-            <div class="font-adjust">
-                <button id="fontPlus" class="font-btn">أ+</button>
-                <button id="fontMinus" class="font-btn">أ-</button>
+    <div id="mainContainer" class="main-container">
+        <!-- زر القائمة الجانبية -->
+        <button id="menuToggle" class="menu-toggle">☰</button>
+        
+        <!-- القائمة الجانبية المنسدلة -->
+        <div id="sideMenu" class="side-menu">
+            <div class="menu-header">
+                <h3>المصحف الكريم</h3>
+                <button id="closeMenu" class="close-menu">&times;</button>
             </div>
-        </div>
-
-        <!-- صفحة المصحف -->
-        <div class="quran-page-container">
-            <div class="page-left">
-                <div class="page-border">
-                    <div class="page-inner-border">
-                        <div class="page-content" id="pageLeftContent">
-                            <!-- المحتوى الأيسر -->
-                        </div>
+            
+            <div class="menu-items">
+                <button id="menuSurahs" class="menu-item">
+                    <span class="menu-icon">📚</span>
+                    فهرس السور
+                </button>
+                
+                <button id="menuJuz" class="menu-item">
+                    <span class="menu-icon">📖</span>
+                    فهرس الأجزاء
+                </button>
+                
+                <button id="menuSearch" class="menu-item">
+                    <span class="menu-icon">🔍</span>
+                    البحث
+                </button>
+                
+                <button id="menuBookmark" class="menu-item">
+                    <span class="menu-icon">📑</span>
+                    العلامة المرجعية
+                </button>
+                
+                <div class="menu-divider"></div>
+                
+                <div class="font-controls">
+                    <span class="font-label">حجم الخط:</span>
+                    <div class="font-buttons">
+                        <button id="fontPlus" class="font-btn">أ+</button>
+                        <button id="fontMinus" class="font-btn">أ-</button>
                     </div>
                 </div>
+                
+                <div class="menu-divider"></div>
+                
+                <button id="menuAbout" class="menu-item">
+                    <span class="menu-icon">ℹ️</span>
+                    حول التطبيق
+                </button>
             </div>
-            <div class="page-right">
-                <div class="page-border">
-                    <div class="page-inner-border">
-                        <div class="page-content" id="pageRightContent">
-                            <!-- المحتوى الأيمن -->
-                        </div>
+        </div>
+        
+        <!-- صفحة المصحف الواحدة -->
+        <div id="quranPage" class="quran-page">
+            <div class="page-frame">
+                <div class="page-inner-frame">
+                    <div class="page-content" id="pageContent">
+                        <!-- محتوى الصفحة -->
                     </div>
                 </div>
+                
+                <!-- رقم الصفحة في الأسفل -->
+                <div class="page-number" id="pageNumber">١</div>
             </div>
         </div>
-
-        <!-- شريط تنقل سفلي -->
-        <div class="bottom-nav">
-            <button id="prevPage" class="nav-btn">→ الصفحة السابقة</button>
-            <div class="page-indicator">
-                <span id="currentPageNum">1</span> / <span id="totalPages">604</span>
-            </div>
-            <button id="nextPage" class="nav-btn">الصفحة التالية ←</button>
-        </div>
-
-        <!-- نافذة فهرس السور -->
-        <div id="surahIndex" class="modal">
+        
+        <!-- نوافذ منبثقة -->
+        <div id="surahModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>فهرس السور</h2>
                     <button class="close-modal">&times;</button>
                 </div>
-                <div class="surah-index-list" id="surahIndexList"></div>
+                <div class="modal-body" id="surahList"></div>
             </div>
         </div>
-
-        <!-- نافذة فهرس الأجزاء -->
-        <div id="juzIndex" class="modal">
+        
+        <div id="juzModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>فهرس الأجزاء</h2>
                     <button class="close-modal">&times;</button>
                 </div>
-                <div class="juz-index-list" id="juzIndexList"></div>
+                <div class="modal-body" id="juzList"></div>
             </div>
         </div>
-
-        <!-- نافذة البحث -->
+        
         <div id="searchModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>البحث في المصحف</h2>
                     <button class="close-modal">&times;</button>
                 </div>
-                <div class="search-options">
-                    <select id="searchType">
-                        <option value="text">بحث بالنص</option>
-                        <option value="surah">رقم السورة</option>
-                        <option value="ayah">رقم الآية</option>
-                        <option value="juz">رقم الجزء</option>
-                    </select>
-                    <input type="text" id="searchInput" placeholder="اكتب للبحث...">
-                    <button id="searchBtn">بحث</button>
+                <div class="modal-body">
+                    <div class="search-box">
+                        <select id="searchType">
+                            <option value="text">بحث بالنص</option>
+                            <option value="surah">رقم السورة</option>
+                            <option value="ayah">رقم الآية</option>
+                            <option value="juz">رقم الجزء</option>
+                        </select>
+                        <input type="text" id="searchInput" placeholder="اكتب للبحث...">
+                        <button id="searchBtn">بحث</button>
+                    </div>
+                    <div id="searchResults" class="search-results"></div>
                 </div>
-                <div id="searchResults" class="search-results"></div>
             </div>
         </div>
-
-        <!-- علامة حفظ المكان -->
-        <div id="bookmark" class="bookmark hidden">📑</div>
+        
+        <div id="aboutModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>حول التطبيق</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body about-content">
+                    <h3>المصحف الكريم</h3>
+                    <p>النسخة الورقية الرقمية</p>
+                    <p>برواية حفص عن عاصم</p>
+                    <p>الإصدار: 1.0</p>
+                    <p>يعمل بدون إنترنت</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="quran.js"></script>
