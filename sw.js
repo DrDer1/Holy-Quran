@@ -2,7 +2,7 @@
 // SERVICE WORKER - لتشغيل التطبيق بدون إنترنت
 // ============================================================
 
-const CACHE_NAME = 'quran-cache-v2';
+const CACHE_NAME = 'quran-cache-v3';
 const ASSETS = [
     'index.html',
     'style.css',
