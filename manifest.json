@@ -24,12 +24,5 @@
         }
     ],
     "categories": ["books", "education", "lifestyle"],
-    "prefer_related_applications": false,
-    "shortcuts": [
-        {
-            "name": "استئناف القراءة",
-            "url": "/",
-            "description": "العودة إلى آخر موضع قراءة"
-        }
-    ]
+    "prefer_related_applications": false
 }
