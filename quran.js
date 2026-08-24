@@ -149,30 +149,3 @@ const juzBoundaries = [
     { juz: 29, surah: 67, ayah: 1 },
     { juz: 30, surah: 78, ayah: 1 }
 ];
-
-// ===== متغيرات عامة =====
-let quranData = [];
-
-// ===== تحميل القرآن =====
-async function loadQuran() {
-    try {
-        const response = await fetch('quran.txt');
-        const text = await response.text();
-        const lines = text.trim().split('\n');
-        
-        quranData = lines.map(line => {
-            const parts = line.split('|');
-            return {
-                surah: parseInt(parts[0]),
-                ayah: parseInt(parts[1]),
-                text: parts.slice(2).join('|').trim()
-            };
-        }).filter(ayah => ayah.text.length > 0);
-        
-        console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
-        return true;
-    } catch (error) {
-        console.error('خطأ في تحميل القرآن:', error);
-        return false;
-    }
-}
