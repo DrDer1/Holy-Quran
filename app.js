@@ -8,6 +8,7 @@ let isDragging = false;
 let bookmarks = [];
 let currentSurahNumber = 1;
 let currentJuzNumber = 1;
+let hasStartedReading = false;
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -31,10 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // تهيئة الواجهة
     initializeUI();
     
-    // عرض الصفحة
-    displayPage(currentPageNumber);
+    // تفعيل السحب لصفحة البداية
+    setupStartPageSwipe();
     
-    // تفعيل السحب
+    // تفعيل السحب لصفحة المصحف
     setupSwipeGestures();
 });
 
@@ -51,6 +52,7 @@ function loadSettings() {
     if (savedProgress) {
         const progress = JSON.parse(savedProgress);
         currentPageNumber = progress.page || 1;
+        hasStartedReading = true;
     }
     
     // استعادة المواضع المحفوظة
@@ -70,7 +72,7 @@ function initializeUI() {
     // عناصر القائمة
     document.getElementById('menuQuran').addEventListener('click', () => {
         closeMenu();
-        goToLastPosition();
+        openQuranFromMenu();
     });
     
     document.getElementById('menuIndex').addEventListener('click', () => {
@@ -144,18 +146,93 @@ function initializeUI() {
     applyFontSize();
 }
 
-// ===== فتح وإغلاق القائمة =====
-function openMenu() {
-    document.getElementById('sideMenu').classList.add('open');
-    document.getElementById('sideMenuOverlay').classList.add('active');
+// ===== فتح المصحف من القائمة =====
+function openQuranFromMenu() {
+    if (hasStartedReading) {
+        // العودة لآخر موضع قراءة
+        const savedProgress = localStorage.getItem('quranProgress');
+        if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            currentPageNumber = progress.page || 1;
+        }
+    } else {
+        // أول مرة - البدء من الفاتحة
+        currentPageNumber = 1;
+    }
+    
+    showQuranView();
+    displayPage(currentPageNumber);
 }
 
-function closeMenu() {
-    document.getElementById('sideMenu').classList.remove('open');
-    document.getElementById('sideMenuOverlay').classList.remove('active');
+// ===== إظهار واجهة المصحف =====
+function showQuranView() {
+    document.getElementById('startPage').classList.add('hidden');
+    document.getElementById('topBar').classList.remove('hidden');
+    document.getElementById('quranArea').classList.remove('hidden');
+    hasStartedReading = true;
 }
 
-// ===== إعداد السحب =====
+// ===== إعداد السحب لصفحة البداية =====
+function setupStartPageSwipe() {
+    const startPage = document.getElementById('startPage');
+    
+    startPage.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        isDragging = true;
+    }, { passive: true });
+    
+    startPage.addEventListener('touchend', (e) => {
+        if (isDragging) {
+            touchEndX = e.changedTouches[0].clientX;
+            handleStartPageSwipe();
+            isDragging = false;
+        }
+    });
+    
+    // دعم الفأرة
+    startPage.addEventListener('mousedown', (e) => {
+        touchStartX = e.clientX;
+        isDragging = true;
+    });
+    
+    startPage.addEventListener('mouseup', (e) => {
+        if (isDragging) {
+            touchEndX = e.clientX;
+            handleStartPageSwipe();
+            isDragging = false;
+        }
+    });
+}
+
+// ===== معالجة سحب صفحة البداية =====
+function handleStartPageSwipe() {
+    const swipeDistance = touchEndX - touchStartX;
+    const minSwipeDistance = 50;
+    
+    if (Math.abs(swipeDistance) < minSwipeDistance) {
+        return;
+    }
+    
+    if (swipeDistance < 0) {
+        // سحب لليسار - فتح المصحف
+        if (hasStartedReading) {
+            // العودة لآخر موضع
+            const savedProgress = localStorage.getItem('quranProgress');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                currentPageNumber = progress.page || 1;
+            }
+        } else {
+            // أول مرة - البدء من الفاتحة
+            currentPageNumber = 1;
+        }
+        
+        showQuranView();
+        displayPage(currentPageNumber);
+    }
+}
+
+// ===== إعداد السحب للمصحف =====
 function setupSwipeGestures() {
     const page = document.getElementById('quranPage');
     
@@ -376,9 +453,22 @@ function convertToArabicNumbers(number) {
 // ===== تطبيق حجم الخط =====
 function applyFontSize() {
     const content = document.getElementById('pageContent');
-    const baseSize = window.innerWidth < 480 ? 16 : 20;
-    content.style.fontSize = (baseSize * currentFontSize) + 'px';
-    content.style.lineHeight = (2.2 * currentFontSize).toFixed(2);
+    if (content) {
+        const baseSize = window.innerWidth < 480 ? 16 : 20;
+        content.style.fontSize = (baseSize * currentFontSize) + 'px';
+        content.style.lineHeight = (2.2 * currentFontSize).toFixed(2);
+    }
+}
+
+// ===== فتح وإغلاق القائمة =====
+function openMenu() {
+    document.getElementById('sideMenu').classList.add('open');
+    document.getElementById('sideMenuOverlay').classList.add('active');
+}
+
+function closeMenu() {
+    document.getElementById('sideMenu').classList.remove('open');
+    document.getElementById('sideMenuOverlay').classList.remove('active');
 }
 
 // ===== عرض الفهرس =====
@@ -427,7 +517,7 @@ function showBookmarksModal() {
         return;
     }
     
-    bookmarks.forEach((bookmark, index) => {
+    bookmarks.forEach((bookmark) => {
         const item = document.createElement('div');
         item.className = 'bookmark-item';
         
@@ -440,6 +530,7 @@ function showBookmarksModal() {
         `;
         
         item.addEventListener('click', () => {
+            showQuranView();
             displayPage(bookmark.page);
             modal.classList.add('hidden');
         });
@@ -450,8 +541,6 @@ function showBookmarksModal() {
 
 // ===== حفظ الموضع =====
 function saveBookmark() {
-    const surahInfo = surahNames.find(s => s.number === currentSurahNumber);
-    
     const bookmark = {
         page: currentPageNumber,
         surah: currentSurahNumber,
@@ -470,18 +559,8 @@ function goToSurah(surahNumber) {
     if (firstAyah) {
         const ayahIndex = quranData.indexOf(firstAyah);
         currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+        showQuranView();
         displayPage(currentPageNumber);
-    }
-}
-
-// ===== العودة لآخر موضع =====
-function goToLastPosition() {
-    const savedProgress = localStorage.getItem('quranProgress');
-    if (savedProgress) {
-        const progress = JSON.parse(savedProgress);
-        displayPage(progress.page || 1);
-    } else {
-        displayPage(1);
     }
 }
 
@@ -574,6 +653,7 @@ function performSearch() {
         resultItem.addEventListener('click', () => {
             const ayahIndex = quranData.indexOf(ayah);
             currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+            showQuranView();
             displayPage(currentPageNumber);
             document.getElementById('searchModal').classList.add('hidden');
         });
