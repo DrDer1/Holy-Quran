@@ -1,9 +1,11 @@
 // ===== المتغيرات العامة =====
 let currentPageNumber = 1;
 let totalPages = 604;
-let currentView = 'page'; // page, surah, juz, search
-let ayahsPerPage = 15;
 let currentFontSize = 1.8;
+let touchStartX = 0;
+let touchEndX = 0;
+let isDragging = false;
+let currentBookmark = null;
 
 // ===== تهيئة التطبيق =====
 document.addEventListener('DOMContentLoaded', async () => {
@@ -13,56 +15,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadQuran();
     
     // استعادة الإعدادات
-    if (loadFontSize()) {
-        currentFontSize = parseFloat(localStorage.getItem('quranFontSize'));
-    }
-    
-    if (loadProgress()) {
-        const progress = JSON.parse(localStorage.getItem('quranProgress'));
-        currentPageNumber = progress.page || 1;
-        currentSurah = progress.surah || 1;
-        currentAyah = progress.ayah || 1;
-    }
+    loadSettings();
     
     // تهيئة الواجهة
     initializeUI();
     
-    // عرض الصفحة الأولى أو المحفوظة
+    // عرض الصفحة
     displayPage(currentPageNumber);
     
-    // إظهار العلامة المرجعية إذا وجدت
-    if (bookmark) {
-        document.getElementById('bookmark').classList.remove('hidden');
-    }
+    // تفعيل السحب
+    setupSwipeGestures();
 });
+
+// ===== تحميل الإعدادات =====
+function loadSettings() {
+    // استعادة حجم الخط
+    const savedFontSize = localStorage.getItem('quranFontSize');
+    if (savedFontSize) {
+        currentFontSize = parseFloat(savedFontSize);
+    }
+    
+    // استعادة التقدم
+    const savedProgress = localStorage.getItem('quranProgress');
+    if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        currentPageNumber = progress.page || 1;
+    }
+    
+    // استعادة العلامة المرجعية
+    const savedBookmark = localStorage.getItem('quranBookmark');
+    if (savedBookmark) {
+        currentBookmark = JSON.parse(savedBookmark);
+    }
+}
 
 // ===== تهيئة الواجهة =====
 function initializeUI() {
-    // زر فتح المصحف
-    document.getElementById('openQuran').addEventListener('click', () => {
-        document.getElementById('cover').classList.add('hidden');
-        document.getElementById('mainQuran').classList.remove('hidden');
+    // زر القائمة
+    document.getElementById('menuToggle').addEventListener('click', toggleMenu);
+    document.getElementById('closeMenu').addEventListener('click', toggleMenu);
+    
+    // عناصر القائمة
+    document.getElementById('menuSurahs').addEventListener('click', () => {
+        toggleMenu();
+        showSurahModal();
     });
     
-    // زر العودة للغلاف
-    document.getElementById('backToCover').addEventListener('click', () => {
-        document.getElementById('mainQuran').classList.add('hidden');
-        document.getElementById('cover').classList.remove('hidden');
+    document.getElementById('menuJuz').addEventListener('click', () => {
+        toggleMenu();
+        showJuzModal();
     });
     
-    // أزرار التنقل
-    document.getElementById('prevPage').addEventListener('click', () => {
-        if (currentPageNumber > 1) {
-            currentPageNumber--;
-            displayPage(currentPageNumber);
-        }
+    document.getElementById('menuSearch').addEventListener('click', () => {
+        toggleMenu();
+        showSearchModal();
     });
     
-    document.getElementById('nextPage').addEventListener('click', () => {
-        if (currentPageNumber < totalPages) {
-            currentPageNumber++;
-            displayPage(currentPageNumber);
-        }
+    document.getElementById('menuBookmark').addEventListener('click', () => {
+        toggleMenu();
+        goToBookmark();
+    });
+    
+    document.getElementById('menuAbout').addEventListener('click', () => {
+        toggleMenu();
+        showAboutModal();
     });
     
     // أزرار حجم الخط
@@ -78,23 +94,19 @@ function initializeUI() {
         saveFontSize();
     });
     
-    // فتح النوافذ
-    document.getElementById('showSurahs').addEventListener('click', () => {
-        showSurahIndex();
-    });
-    
-    document.getElementById('showJuz').addEventListener('click', () => {
-        showJuzIndex();
-    });
-    
-    document.getElementById('showSearch').addEventListener('click', () => {
-        showSearchModal();
-    });
-    
     // إغلاق النوافذ
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
             btn.closest('.modal').classList.add('hidden');
+        });
+    });
+    
+    // إغلاق النوافذ بالنقر خارجها
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
         });
     });
     
@@ -106,14 +118,6 @@ function initializeUI() {
         }
     });
     
-    // العلامة المرجعية
-    document.getElementById('bookmark').addEventListener('click', () => {
-        if (bookmark) {
-            currentPageNumber = bookmark.page;
-            displayPage(currentPageNumber);
-        }
-    });
-    
     // اختصارات لوحة المفاتيح
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
@@ -121,53 +125,132 @@ function initializeUI() {
     applyFontSize();
 }
 
+// ===== تبديل القائمة الجانبية =====
+function toggleMenu() {
+    const menu = document.getElementById('sideMenu');
+    menu.classList.toggle('open');
+}
+
+// ===== إعداد السحب =====
+function setupSwipeGestures() {
+    const page = document.getElementById('quranPage');
+    
+    // لمس
+    page.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        isDragging = true;
+    }, { passive: true });
+    
+    page.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+            touchEndX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+    
+    page.addEventListener('touchend', () => {
+        if (isDragging) {
+            handleSwipe();
+            isDragging = false;
+        }
+    });
+    
+    // فأرة
+    page.addEventListener('mousedown', (e) => {
+        touchStartX = e.clientX;
+        isDragging = true;
+    });
+    
+    page.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            touchEndX = e.clientX;
+        }
+    });
+    
+    page.addEventListener('mouseup', () => {
+        if (isDragging) {
+            handleSwipe();
+            isDragging = false;
+        }
+    });
+    
+    page.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+        }
+    });
+}
+
+// ===== معالجة السحب =====
+function handleSwipe() {
+    const swipeDistance = touchEndX - touchStartX;
+    const minSwipeDistance = 50; // الحد الأدنى للسحب
+    
+    if (Math.abs(swipeDistance) < minSwipeDistance) {
+        return;
+    }
+    
+    if (swipeDistance > 0) {
+        // سحب لليمين - الصفحة السابقة
+        goToPreviousPage();
+    } else {
+        // سحب لليسار - الصفحة التالية
+        goToNextPage();
+    }
+}
+
+// ===== التنقل بين الصفحات =====
+function goToNextPage() {
+    if (currentPageNumber < totalPages) {
+        const page = document.getElementById('quranPage');
+        page.classList.add('page-turning-next');
+        
+        setTimeout(() => {
+            currentPageNumber++;
+            displayPage(currentPageNumber);
+            page.classList.remove('page-turning-next');
+        }, 250);
+    }
+}
+
+function goToPreviousPage() {
+    if (currentPageNumber > 1) {
+        const page = document.getElementById('quranPage');
+        page.classList.add('page-turning-prev');
+        
+        setTimeout(() => {
+            currentPageNumber--;
+            displayPage(currentPageNumber);
+            page.classList.remove('page-turning-prev');
+        }, 250);
+    }
+}
+
 // ===== عرض الصفحة =====
 function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
     
-    // تحديث مؤشر الصفحة
-    document.getElementById('currentPageNum').textContent = pageNumber;
-    document.getElementById('totalPages').textContent = totalPages;
+    // تحديث رقم الصفحة
+    document.getElementById('pageNumber').textContent = convertToArabicNumbers(pageNumber);
     
-    // حساب الآيات للصفحة الحالية
-    const startAyah = (pageNumber - 1) * ayahsPerPage;
-    const endAyah = startAyah + ayahsPerPage;
-    
-    const pageAyahs = quranData.slice(startAyah, endAyah);
-    
-    // تقسيم الآيات بين الصفحتين
-    const halfIndex = Math.ceil(pageAyahs.length / 2);
-    const rightPageAyahs = pageAyahs.slice(0, halfIndex);
-    const leftPageAyahs = pageAyahs.slice(halfIndex);
+    // حساب الآيات للصفحة
+    const ayahsPerPage = 15;
+    const startIndex = (pageNumber - 1) * ayahsPerPage;
+    const endIndex = startIndex + ayahsPerPage;
+    const pageAyahs = quranData.slice(startIndex, endIndex);
     
     // عرض المحتوى
-    displayRightPage(rightPageAyahs);
-    displayLeftPage(leftPageAyahs);
-    
-    // حفظ التقدم
-    if (pageAyahs.length > 0) {
-        currentSurah = pageAyahs[0].surah;
-        currentAyah = pageAyahs[0].ayah;
-        saveProgress();
-    }
-    
-    // تحديث العلامة المرجعية
-    updateBookmark();
-}
-
-// ===== عرض الصفحة اليمنى =====
-function displayRightPage(ayahs) {
-    const content = document.getElementById('pageRightContent');
+    const content = document.getElementById('pageContent');
     content.innerHTML = '';
     content.style.fontSize = currentFontSize + 'rem';
+    content.style.lineHeight = (currentFontSize * 1.4) + 'rem';
     
-    if (ayahs.length === 0) {
+    if (pageAyahs.length === 0) {
         content.innerHTML = '<div style="text-align:center;color:#999;padding-top:50%;">نهاية المصحف</div>';
         return;
     }
     
     // عرض رأس السورة إذا كانت بداية سورة
-    const firstAyah = ayahs[0];
+    const firstAyah = pageAyahs[0];
     if (firstAyah.ayah === 1) {
         const surahInfo = surahNames.find(s => s.number === firstAyah.surah);
         if (surahInfo) {
@@ -186,7 +269,7 @@ function displayRightPage(ayahs) {
     }
     
     // عرض الآيات
-    ayahs.forEach(ayah => {
+    pageAyahs.forEach(ayah => {
         const ayahContainer = document.createElement('div');
         ayahContainer.className = 'ayah-container';
         
@@ -196,79 +279,38 @@ function displayRightPage(ayahs) {
         
         const ayahNumber = document.createElement('span');
         ayahNumber.className = 'ayah-number';
-        ayahNumber.textContent = ayah.ayah;
+        ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
         
         ayahContainer.appendChild(ayahText);
         ayahContainer.appendChild(ayahNumber);
         content.appendChild(ayahContainer);
     });
+    
+    // حفظ التقدم
+    if (pageAyahs.length > 0) {
+        saveProgress(pageAyahs[0]);
+    }
 }
 
-// ===== عرض الصفحة اليسرى =====
-function displayLeftPage(ayahs) {
-    const content = document.getElementById('pageLeftContent');
-    content.innerHTML = '';
-    content.style.fontSize = currentFontSize + 'rem';
-    
-    if (ayahs.length === 0) {
-        content.innerHTML = '<div style="text-align:center;color:#999;padding-top:50%;"></div>';
-        return;
-    }
-    
-    // التحقق من بداية سورة جديدة
-    const firstAyah = ayahs[0];
-    if (firstAyah.ayah === 1) {
-        const surahInfo = surahNames.find(s => s.number === firstAyah.surah);
-        if (surahInfo) {
-            const surahHeader = document.createElement('div');
-            surahHeader.className = 'surah-header';
-            surahHeader.innerHTML = `سورة ${surahInfo.name}`;
-            content.appendChild(surahHeader);
-            
-            if (firstAyah.surah !== 1 && firstAyah.surah !== 9) {
-                const bismillah = document.createElement('div');
-                bismillah.className = 'surah-bismillah';
-                bismillah.textContent = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-                content.appendChild(bismillah);
-            }
-        }
-    }
-    
-    // عرض الآيات
-    ayahs.forEach(ayah => {
-        const ayahContainer = document.createElement('div');
-        ayahContainer.className = 'ayah-container';
-        
-        const ayahText = document.createElement('span');
-        ayahText.className = 'ayah-text';
-        ayahText.textContent = ayah.text;
-        
-        const ayahNumber = document.createElement('span');
-        ayahNumber.className = 'ayah-number';
-        ayahNumber.textContent = ayah.ayah;
-        
-        ayahContainer.appendChild(ayahText);
-        ayahContainer.appendChild(ayahNumber);
-        content.appendChild(ayahContainer);
+// ===== تحويل الأرقام إلى عربية =====
+function convertToArabicNumbers(number) {
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return number.toString().replace(/[0-9]/g, (match) => {
+        return arabicNumbers[parseInt(match)];
     });
 }
 
 // ===== تطبيق حجم الخط =====
 function applyFontSize() {
-    document.querySelectorAll('.page-content').forEach(el => {
-        el.style.fontSize = currentFontSize + 'rem';
-    });
-    
-    document.querySelectorAll('.ayah-text').forEach(el => {
-        el.style.fontSize = currentFontSize + 'rem';
-        el.style.lineHeight = (currentFontSize * 1.4) + 'rem';
-    });
+    const content = document.getElementById('pageContent');
+    content.style.fontSize = currentFontSize + 'rem';
+    content.style.lineHeight = (currentFontSize * 1.4) + 'rem';
 }
 
-// ===== عرض فهرس السور =====
-function showSurahIndex() {
-    const modal = document.getElementById('surahIndex');
-    const list = document.getElementById('surahIndexList');
+// ===== عرض نافذة السور =====
+function showSurahModal() {
+    const modal = document.getElementById('surahModal');
+    const list = document.getElementById('surahList');
     
     modal.classList.remove('hidden');
     list.innerHTML = '';
@@ -277,30 +319,24 @@ function showSurahIndex() {
         const item = document.createElement('div');
         item.className = 'surah-item';
         item.innerHTML = `
-            <span class="surah-number">${surah.number}</span>
+            <span class="surah-number">${convertToArabicNumbers(surah.number)}</span>
             <span class="surah-name">${surah.name}</span>
             <span class="surah-info">${surah.type} - ${surah.ayahs} آية</span>
         `;
         
         item.addEventListener('click', () => {
-            // الانتقال إلى السورة
-            const firstAyah = quranData.find(a => a.surah === surah.number);
-            if (firstAyah) {
-                const ayahIndex = quranData.indexOf(firstAyah);
-                currentPageNumber = Math.floor(ayahIndex / ayahsPerPage) + 1;
-                displayPage(currentPageNumber);
-                modal.classList.add('hidden');
-            }
+            goToSurah(surah.number);
+            modal.classList.add('hidden');
         });
         
         list.appendChild(item);
     });
 }
 
-// ===== عرض فهرس الأجزاء =====
-function showJuzIndex() {
-    const modal = document.getElementById('juzIndex');
-    const list = document.getElementById('juzIndexList');
+// ===== عرض نافذة الأجزاء =====
+function showJuzModal() {
+    const modal = document.getElementById('juzModal');
+    const list = document.getElementById('juzList');
     
     modal.classList.remove('hidden');
     list.innerHTML = '';
@@ -313,22 +349,14 @@ function showJuzIndex() {
         const surahName = surahInfo ? surahInfo.name : '';
         
         item.innerHTML = `
-            <span class="surah-number">${juz.juz}</span>
-            <span class="surah-name">الجزء ${juz.juz}</span>
-            <span class="surah-info">${surahName} - آية ${juz.ayah}</span>
+            <span class="surah-number">${convertToArabicNumbers(juz.juz)}</span>
+            <span class="surah-name">الجزء ${convertToArabicNumbers(juz.juz)}</span>
+            <span class="surah-info">${surahName} - آية ${convertToArabicNumbers(juz.ayah)}</span>
         `;
         
         item.addEventListener('click', () => {
-            const targetAyah = quranData.find(a => 
-                a.surah === juz.surah && a.ayah === juz.ayah
-            );
-            
-            if (targetAyah) {
-                const ayahIndex = quranData.indexOf(targetAyah);
-                currentPageNumber = Math.floor(ayahIndex / ayahsPerPage) + 1;
-                displayPage(currentPageNumber);
-                modal.classList.add('hidden');
-            }
+            goToJuz(juz.juz);
+            modal.classList.add('hidden');
         });
         
         list.appendChild(item);
@@ -340,6 +368,40 @@ function showSearchModal() {
     const modal = document.getElementById('searchModal');
     modal.classList.remove('hidden');
     document.getElementById('searchInput').focus();
+}
+
+// ===== عرض نافذة حول =====
+function showAboutModal() {
+    const modal = document.getElementById('aboutModal');
+    modal.classList.remove('hidden');
+}
+
+// ===== الانتقال إلى سورة =====
+function goToSurah(surahNumber) {
+    const firstAyah = quranData.find(a => a.surah === surahNumber);
+    if (firstAyah) {
+        const ayahIndex = quranData.indexOf(firstAyah);
+        currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+        displayPage(currentPageNumber);
+        setBookmark();
+    }
+}
+
+// ===== الانتقال إلى جزء =====
+function goToJuz(juzNumber) {
+    const juzInfo = juzBoundaries.find(j => j.juz === juzNumber);
+    if (juzInfo) {
+        const targetAyah = quranData.find(a => 
+            a.surah === juzInfo.surah && a.ayah === juzInfo.ayah
+        );
+        
+        if (targetAyah) {
+            const ayahIndex = quranData.indexOf(targetAyah);
+            currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+            displayPage(currentPageNumber);
+            setBookmark();
+        }
+    }
 }
 
 // ===== تنفيذ البحث =====
@@ -413,74 +475,51 @@ function performSearch() {
         
         resultItem.innerHTML = `
             <div style="font-weight:bold;color:#1a472a;margin-bottom:5px;">
-                سورة ${surahName} - آية ${ayah.ayah}
+                سورة ${surahName} - آية ${convertToArabicNumbers(ayah.ayah)}
             </div>
             <div style="font-size:1.1rem;">${ayah.text}</div>
         `;
         
         resultItem.addEventListener('click', () => {
             const ayahIndex = quranData.indexOf(ayah);
-            currentPageNumber = Math.floor(ayahIndex / ayahsPerPage) + 1;
+            currentPageNumber = Math.floor(ayahIndex / 15) + 1;
             displayPage(currentPageNumber);
             document.getElementById('searchModal').classList.add('hidden');
+            setBookmark();
         });
         
         resultsContainer.appendChild(resultItem);
     });
 }
 
-// ===== تحديث العلامة المرجعية =====
-function updateBookmark() {
-    bookmark = {
+// ===== العلامة المرجعية =====
+function setBookmark() {
+    currentBookmark = {
         page: currentPageNumber,
-        surah: currentSurah,
-        ayah: currentAyah,
         timestamp: Date.now()
     };
     
-    localStorage.setItem('quranBookmark', JSON.stringify(bookmark));
-    
-    if (bookmark) {
-        document.getElementById('bookmark').classList.remove('hidden');
+    localStorage.setItem('quranBookmark', JSON.stringify(currentBookmark));
+}
+
+function goToBookmark() {
+    if (currentBookmark) {
+        displayPage(currentBookmark.page);
+    } else {
+        alert('لا توجد علامة مرجعية محفوظة');
     }
 }
 
-// ===== اختصارات لوحة المفاتيح =====
-function handleKeyboardShortcuts(event) {
-    // Ctrl + F للبحث
-    if (event.ctrlKey && event.key === 'f') {
-        event.preventDefault();
-        showSearchModal();
-    }
+// ===== حفظ التقدم =====
+function saveProgress(firstAyah) {
+    const progress = {
+        page: currentPageNumber,
+        surah: firstAyah.surah,
+        ayah: firstAyah.ayah,
+        timestamp: Date.now()
+    };
     
-    // Ctrl + S لحفظ التقدم
-    if (event.ctrlKey && event.key === 's') {
-        event.preventDefault();
-        saveProgress();
-        alert('تم حفظ التقدم بنجاح');
-    }
-    
-    // مفاتيح الأسهم للتنقل
-    if (event.key === 'ArrowLeft') {
-        if (currentPageNumber > 1) {
-            currentPageNumber--;
-            displayPage(currentPageNumber);
-        }
-    }
-    
-    if (event.key === 'ArrowRight') {
-        if (currentPageNumber < totalPages) {
-            currentPageNumber++;
-            displayPage(currentPageNumber);
-        }
-    }
-    
-    // ESC لإغلاق النوافذ
-    if (event.key === 'Escape') {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.add('hidden');
-        });
-    }
+    localStorage.setItem('quranProgress', JSON.stringify(progress));
 }
 
 // ===== حفظ حجم الخط =====
@@ -488,37 +527,35 @@ function saveFontSize() {
     localStorage.setItem('quranFontSize', currentFontSize.toString());
 }
 
-// ===== تحميل حجم الخط =====
-function loadFontSize() {
-    const saved = localStorage.getItem('quranFontSize');
-    if (saved) {
-        currentFontSize = parseFloat(saved);
-        return true;
+// ===== اختصارات لوحة المفاتيح =====
+function handleKeyboardShortcuts(event) {
+    // الأسهم للتنقل
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        goToNextPage();
     }
-    return false;
-}
-
-// ===== حفظ التقدم =====
-function saveProgress() {
-    const progress = {
-        page: currentPageNumber,
-        surah: currentSurah,
-        ayah: currentAyah,
-        timestamp: Date.now()
-    };
     
-    localStorage.setItem('quranProgress', JSON.stringify(progress));
-}
-
-// ===== استعادة التقدم =====
-function loadProgress() {
-    const saved = localStorage.getItem('quranProgress');
-    if (saved) {
-        const progress = JSON.parse(saved);
-        currentPageNumber = progress.page || 1;
-        currentSurah = progress.surah || 1;
-        currentAyah = progress.ayah || 1;
-        return true;
+    if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        goToPreviousPage();
     }
-    return false;
+    
+    // Ctrl + F للبحث
+    if (event.ctrlKey && event.key === 'f') {
+        event.preventDefault();
+        showSearchModal();
+    }
+    
+    // ESC لإغلاق النوافذ والقائمة
+    if (event.key === 'Escape') {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.classList.add('hidden');
+        });
+        document.getElementById('sideMenu').classList.remove('open');
+    }
+    
+    // M لفتح القائمة
+    if (event.key === 'm' || event.key === 'M') {
+        toggleMenu();
+    }
 }
