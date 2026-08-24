@@ -2,36 +2,24 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>المصحف الكريم</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="192.png">
     <link rel="apple-touch-icon" href="192.png">
     <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- الحاوية الرئيسية -->
-    <div id="mainContainer" class="main-container">
-        
-        <!-- صفحة البداية -->
-        <div id="startPage" class="start-page">
-            <div class="start-frame">
-                <div class="start-ornament-top">❁</div>
-                <div class="start-content">
-                    <div class="start-inner-frame">
-                        <h1 class="start-title">الْقُرْآنُ الْكَرِيمُ</h1>
-                        <div class="start-subtitle">رَبِّ زِدْنِي عِلْمًا</div>
-                    </div>
-                </div>
-                <div class="start-ornament-bottom">❁</div>
-            </div>
-        </div>
+    <div id="appContainer" class="app-container">
         
         <!-- الشريط العلوي -->
-        <header class="top-bar hidden" id="topBar">
+        <header id="topBar" class="top-bar hidden">
             <button id="searchBtn" class="top-btn" aria-label="بحث">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
@@ -43,7 +31,7 @@
             </div>
             
             <button id="menuToggle" class="top-btn" aria-label="قائمة">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <line x1="3" y1="6" x2="21" y2="6"></line>
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -97,15 +85,25 @@
             </div>
         </div>
         
-        <!-- منطقة صفحة المصحف -->
-        <main class="quran-area hidden" id="quranArea">
+        <!-- منطقة عرض المصحف -->
+        <main id="quranArea" class="quran-area">
             <div id="quranPage" class="quran-page">
-                <div class="page-frame-outer">
-                    <div class="page-frame-inner">
-                        <div class="page-text-border">
-                            <div class="page-content" id="pageContent">
-                                <!-- محتوى الصفحة -->
-                            </div>
+                <!-- الصفحة الافتتاحية -->
+                <div id="openingPage" class="opening-page">
+                    <div class="opening-frame">
+                        <div class="opening-ornament-top">❁</div>
+                        <div class="opening-content">
+                            <h1 class="opening-title">الْقُرْآنُ الْكَرِيمُ</h1>
+                        </div>
+                        <div class="opening-ornament-bottom">❁</div>
+                    </div>
+                </div>
+                
+                <!-- صفحة المصحف -->
+                <div id="mushafPage" class="mushaf-page hidden">
+                    <div class="mushaf-frame">
+                        <div class="mushaf-content" id="mushafContent">
+                            <!-- محتوى الصفحة -->
                         </div>
                         <div class="page-number" id="pageNumber">١</div>
                     </div>
@@ -114,7 +112,7 @@
         </main>
         
         <!-- نافذة الفهرس -->
-        <div id="indexModal" class="modal">
+        <div id="indexModal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>فهرس السور</h2>
@@ -125,7 +123,7 @@
         </div>
         
         <!-- نافذة البحث -->
-        <div id="searchModal" class="modal">
+        <div id="searchModal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>البحث</h2>
@@ -148,7 +146,7 @@
         </div>
         
         <!-- نافذة المواضع المحفوظة -->
-        <div id="bookmarksModal" class="modal">
+        <div id="bookmarksModal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>المواضع المحفوظة</h2>
@@ -160,20 +158,18 @@
         
         <!-- صفحة الإهداء -->
         <div id="dedicationPage" class="dedication-page hidden">
-            <div class="page-frame-outer">
-                <div class="page-frame-inner">
-                    <div class="dedication-content">
-                        <div class="dedication-ornament-top">❁</div>
-                        <h1 class="dedication-title">إهــداء</h1>
-                        <div class="dedication-text" id="dedicationText">
-                            <p>إلى من علمني حرفاً...</p>
-                            <p>إلى والديّ الكريمين</p>
-                            <p>وإلى كل من يبحث عن نور القرآن</p>
-                            <p>أهدي هذا العمل</p>
-                            <p>سائلاً المولى أن يجعله خالصاً لوجهه الكريم</p>
-                        </div>
-                        <div class="dedication-ornament-bottom">❁</div>
+            <div class="mushaf-frame">
+                <div class="dedication-content">
+                    <div class="dedication-ornament-top">❁</div>
+                    <h1 class="dedication-title">إهــداء</h1>
+                    <div class="dedication-text" id="dedicationText">
+                        <p>إلى من علمني حرفاً...</p>
+                        <p>إلى والديّ الكريمين</p>
+                        <p>وإلى كل من يبحث عن نور القرآن</p>
+                        <p>أهدي هذا العمل</p>
+                        <p>سائلاً المولى أن يجعله خالصاً لوجهه الكريم</p>
                     </div>
+                    <div class="dedication-ornament-bottom">❁</div>
                 </div>
             </div>
             <button id="backFromDedication" class="back-btn">↩ رجوع</button>
