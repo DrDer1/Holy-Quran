@@ -225,6 +225,7 @@ body {
     font-size: 2rem;
     text-align: center;
     margin: 10px 0;
+    flex-shrink: 0;
 }
 
 .page-content-wrapper {
@@ -232,33 +233,23 @@ body {
     width: 100%;
     overflow: hidden;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .page-content {
     width: 100%;
     height: 100%;
-    padding: 30px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: #c9a84c #1a1a1a;
+    padding: 20px;
+    overflow: hidden;
     text-align: center;
     font-size: 1.8rem;
     line-height: 2.5;
     color: #f4e4c1;
-}
-
-.page-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.page-content::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-.page-content::-webkit-scrollbar-thumb {
-    background: #c9a84c;
-    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* ===== رقم الصفحة ===== */
@@ -275,6 +266,7 @@ body {
     font-size: 0.9rem;
     font-weight: bold;
     letter-spacing: 1px;
+    flex-shrink: 0;
 }
 
 /* ===== تنسيق السور والآيات ===== */
@@ -282,13 +274,14 @@ body {
     color: #c9a84c;
     font-size: 2rem;
     font-weight: bold;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     padding: 20px;
     border: 3px solid #c9a84c;
     border-radius: 15px;
     background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
     text-align: center;
     position: relative;
+    flex-shrink: 0;
 }
 
 .surah-header::before,
@@ -318,15 +311,10 @@ body {
 .surah-bismillah {
     color: #c9a84c;
     font-size: 1.5rem;
-    margin: 30px 0;
+    margin: 20px 0;
     font-weight: bold;
     text-align: center;
-}
-
-.ayah-container {
-    margin: 15px 0;
-    padding: 10px;
-    text-align: justify;
+    flex-shrink: 0;
 }
 
 .ayah-text {
@@ -590,7 +578,7 @@ body {
     }
     
     .page-content {
-        padding: 20px;
+        padding: 15px;
         font-size: 1.4rem;
         line-height: 2;
     }
@@ -638,7 +626,7 @@ body {
     }
     
     .page-content {
-        padding: 15px;
+        padding: 10px;
         font-size: 1.2rem;
         line-height: 1.8;
     }
