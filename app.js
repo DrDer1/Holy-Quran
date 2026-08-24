@@ -1,5 +1,5 @@
 // ============================================================
-// APP.JS - تطبيق المصحف الكريم
+// APP.JS - تطبيق المصحف الكريم (نسخة ورقية)
 // ============================================================
 
 let currentSurah = 0;
@@ -13,17 +13,17 @@ let lastRead = null;
 
 async function loadQuran() {
     try {
-        console.log('📂 جاري تحميل القرآن من quran.txt...');
-        const response = await fetch('quran.txt');
+        console.log('📂 جاري تحميل القرآن...');
+        const timestamp = new Date().getTime();
+        const response = await fetch(`quran.txt?v=${timestamp}`);
         
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP ${response.status}`);
         }
         
         const text = await response.text();
         console.log('📄 تم تحميل النص، الطول:', text.length, 'حرف');
         
-        // تحويل النص إلى JSON
         const lines = text.split('\n');
         QURAN_DATA = {};
         let ayahCount = 0;
@@ -48,33 +48,22 @@ async function loadQuran() {
             }
         });
         
-        console.log(`✅ تم التحميل بنجاح!`);
-        console.log(`📖 عدد السور: ${surahCount}`);
-        console.log(`📜 عدد الآيات: ${ayahCount}`);
-        
-        // عرض أول سورة كتجربة
-        const firstSurah = Math.min(...Object.keys(QURAN_DATA).map(Number));
-        console.log(`📖 مثال: سورة ${firstSurah} - أول آية:`, QURAN_DATA[firstSurah][0].text.substring(0, 30) + '...');
+        console.log(`✅ تم التحميل: ${surahCount} سورة، ${ayahCount} آية`);
         
     } catch(e) {
-        console.error('❌ خطأ في تحميل القرآن:', e);
+        console.error('❌ خطأ:', e);
         document.getElementById('surahList').innerHTML = `
-            <div class="no-results" style="padding:40px;text-align:center;">
+            <div class="no-results">
                 <span>⚠️</span>
-                <h3 style="color:#d4af37;margin-top:10px;">لم يتم العثور على ملف القرآن</h3>
-                <p style="color:#888;margin-top:10px;">
-                    تأكد من وجود ملف <strong style="color:#d4af37;">quran.txt</strong> في نفس المجلد
-                </p>
-                <p style="color:#555;font-size:0.8em;margin-top:5px;">
-                    📁 المسار المتوقع: <span style="color:#666;">/quran.txt</span>
-                </p>
+                <h3 style="color:#8b6e2b;margin-top:10px;">لم يتم العثور على المصحف</h3>
+                <p style="color:#8b7a5a;margin-top:10px;">تأكد من وجود ملف <strong>quran.txt</strong></p>
                 <button onclick="location.reload()" style="
                     margin-top:15px;
-                    background:#d4af37;
-                    color:#0a0e17;
+                    background:#c9a84c;
+                    color:#1a1a1a;
                     border:none;
                     padding:10px 30px;
-                    border-radius:25px;
+                    border-radius:30px;
                     font-size:1em;
                     cursor:pointer;
                     font-family:inherit;
@@ -84,13 +73,11 @@ async function loadQuran() {
         return;
     }
     
-    // التأكد من وجود بيانات
     if (Object.keys(QURAN_DATA).length === 0) {
         document.getElementById('surahList').innerHTML = `
-            <div class="no-results" style="padding:40px;text-align:center;">
+            <div class="no-results">
                 <span>📭</span>
-                <h3 style="color:#d4af37;margin-top:10px;">الملف فارغ أو غير صحيح</h3>
-                <p style="color:#888;margin-top:10px;">تأكد من أن الملف يحتوي على بيانات بصيغة: سورة|آية|نص</p>
+                <h3 style="color:#8b6e2b;">الملف فارغ</h3>
             </div>
         `;
         return;
@@ -153,29 +140,27 @@ function openJuz(juzNum) {
 }
 
 // ============================================================
-// OPEN SURAH
+// OPEN SURAH - عرض المصحف
 // ============================================================
 
 function openSurah(num, highlightAyah = null) {
     const surah = QURAN_DATA[num];
     if (!surah) {
-        alert('⚠️ السورة غير موجودة في البيانات');
+        alert('⚠️ السورة غير موجودة');
         return;
     }
     
     currentSurah = num;
     
-    // إخفاء التبويبات
     document.querySelector('.tab-content.active')?.classList.remove('active');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     
-    // عرض شاشة الآيات
     const screen = document.getElementById('ayahScreen');
     screen.classList.add('active');
     document.body.style.overflow = 'hidden';
     
     const name = SURAH_NAMES[num-1] || `سورة ${num}`;
-    document.getElementById('surahTitle').textContent = `${name} (${num})`;
+    document.getElementById('surahTitle').textContent = `سورة ${name}`;
     
     const list = document.getElementById('ayahList');
     list.innerHTML = '';
@@ -199,14 +184,11 @@ function openSurah(num, highlightAyah = null) {
         list.appendChild(div);
     });
     
-    // تطبيق حجم الخط
     applyFontSize();
     
-    // حفظ آخر مكان
     const ayahToSave = highlightAyah || 1;
     saveLastRead(num, ayahToSave);
     
-    // تمرير للآية المميزة
     if (highlightAyah) {
         setTimeout(() => {
             const el = document.getElementById(`ayah-${highlightAyah}`);
@@ -249,7 +231,6 @@ function doSearch() {
     let found = [];
     const surahNumbers = Object.keys(QURAN_DATA).map(Number).sort((a,b) => a-b);
     
-    // بحث برقم الجزء
     if (juzNum >= 1 && juzNum <= 30) {
         const bound = JUZ_BOUNDARIES[juzNum - 1];
         const nextBound = JUZ_BOUNDARIES[juzNum] || { surah: 999, ayah: 999 };
@@ -277,7 +258,6 @@ function doSearch() {
         }
     }
     
-    // بحث برقم الآية
     if (ayahNum >= 1) {
         for (const sNum of surahNumbers) {
             const surah = QURAN_DATA[sNum];
@@ -293,7 +273,6 @@ function doSearch() {
         }
     }
     
-    // بحث بالنص
     if (textQuery.length > 0) {
         for (const sNum of surahNumbers) {
             const surah = QURAN_DATA[sNum];
@@ -310,7 +289,6 @@ function doSearch() {
         }
     }
     
-    // إزالة المكررات
     const unique = [];
     const seen = new Set();
     for (const item of found) {
@@ -326,22 +304,21 @@ function doSearch() {
         return;
     }
     
-    // عرض النتائج
     let html = `<div class="section-title">نتائج البحث (${unique.length})</div>`;
     unique.slice(0, 100).forEach(item => {
         const preview = item.text.length > 80 ? item.text.substring(0, 80) + '…' : item.text;
         html += `
-            <div class="ayah-line" style="cursor:pointer;border-bottom:1px solid #111a22;" 
+            <div class="ayah-line" style="cursor:pointer;border-bottom:1px solid #e0d5c0;" 
                  onclick="openSurah(${item.surah}, ${item.ayah})">
                 <span class="ayah-num">${item.surah}:${item.ayah}</span>
-                <span style="color:#888;font-size:0.8em;">${item.surahName}</span>
+                <span style="color:#8b7a5a;font-size:0.8em;">${item.surahName}</span>
                 <br>
                 <span style="font-size:0.95em;">${preview}</span>
             </div>
         `;
     });
     if (unique.length > 100) {
-        html += `<div style="text-align:center;color:#555;padding:15px;">... عرض ${100} من ${unique.length} نتيجة</div>`;
+        html += `<div style="text-align:center;color:#8b7a5a;padding:15px;">... عرض ${100} من ${unique.length} نتيجة</div>`;
     }
     results.innerHTML = html;
     switchTab('search');
@@ -376,10 +353,10 @@ function applyFontSize() {
         el.style.fontSize = (fontSize / 100) + 'em';
     });
     document.querySelectorAll('.bismillah').forEach(el => {
-        el.style.fontSize = (fontSize / 100 * 1.8) + 'em';
+        el.style.fontSize = (fontSize / 100 * 2.2) + 'em';
     });
     document.querySelectorAll('.surah-title').forEach(el => {
-        el.style.fontSize = (fontSize / 100 * 1.8) + 'em';
+        el.style.fontSize = (fontSize / 100 * 2) + 'em';
     });
 }
 
@@ -392,7 +369,7 @@ function loadFontSize() {
 }
 
 // ============================================================
-// LAST READ (localStorage)
+// LAST READ
 // ============================================================
 
 function saveLastRead(surah, ayah) {
@@ -477,7 +454,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-// SERVICE WORKER REGISTRATION (PWA)
+// SERVICE WORKER
 // ============================================================
 
 if ('serviceWorker' in navigator) {
@@ -492,13 +469,11 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('DOMContentLoaded', loadQuran);
 
-console.log('📖 المصحف الكريم جاهز!');
+console.log('📖 المصحف الكريم - النسخة الورقية');
 console.log('💡 الميزات:');
-console.log('  - بحث برقم الآية');
-console.log('  - بحث برقم الجزء');
-console.log('  - بحث بنص');
+console.log('  - تصميم يشبه المصحف الورقي');
+console.log('  - خط عثماني');
+console.log('  - بحث برقم الآية، الجزء، النص');
 console.log('  - تكبير/تصغير النص');
-console.log('  - حفظ آخر مكان قراءة');
-console.log('  - وضع ليلي دائم');
-console.log('  - PWA (تثبيت على الجوال)');
-console.log('⌨️ اختصارات: ESC للإغلاق, Ctrl+F للبحث');
+console.log('  - حفظ آخر مكان');
+console.log('⌨️ ESC للإغلاق، Ctrl+F للبحث');
