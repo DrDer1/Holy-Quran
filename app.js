@@ -76,11 +76,6 @@ function initializeUI() {
         goToBookmark();
     });
     
-    document.getElementById('menuAbout').addEventListener('click', () => {
-        toggleMenu();
-        showAboutModal();
-    });
-    
     // أزرار حجم الخط
     document.getElementById('fontPlus').addEventListener('click', () => {
         currentFontSize = Math.min(currentFontSize + 0.2, 3.5);
@@ -183,18 +178,18 @@ function setupSwipeGestures() {
 // ===== معالجة السحب =====
 function handleSwipe() {
     const swipeDistance = touchEndX - touchStartX;
-    const minSwipeDistance = 50; // الحد الأدنى للسحب
+    const minSwipeDistance = 50;
     
     if (Math.abs(swipeDistance) < minSwipeDistance) {
         return;
     }
     
     if (swipeDistance > 0) {
-        // سحب لليمين - الصفحة السابقة
-        goToPreviousPage();
-    } else {
-        // سحب لليسار - الصفحة التالية
+        // سحب لليمين - الصفحة التالية (معكوس)
         goToNextPage();
+    } else {
+        // سحب لليسار - الصفحة السابقة (معكوس)
+        goToPreviousPage();
     }
 }
 
@@ -242,7 +237,7 @@ function displayPage(pageNumber) {
     const content = document.getElementById('pageContent');
     content.innerHTML = '';
     content.style.fontSize = currentFontSize + 'rem';
-    content.style.lineHeight = (currentFontSize * 1.4) + 'rem';
+    content.style.lineHeight = (currentFontSize * 1.5) + 'rem';
     
     if (pageAyahs.length === 0) {
         content.innerHTML = '<div style="text-align:center;color:#999;padding-top:50%;">نهاية المصحف</div>';
@@ -252,20 +247,7 @@ function displayPage(pageNumber) {
     // عرض رأس السورة إذا كانت بداية سورة
     const firstAyah = pageAyahs[0];
     if (firstAyah.ayah === 1) {
-        const surahInfo = surahNames.find(s => s.number === firstAyah.surah);
-        if (surahInfo) {
-            const surahHeader = document.createElement('div');
-            surahHeader.className = 'surah-header';
-            surahHeader.innerHTML = `سورة ${surahInfo.name}`;
-            content.appendChild(surahHeader);
-            
-            if (firstAyah.surah !== 1 && firstAyah.surah !== 9) {
-                const bismillah = document.createElement('div');
-                bismillah.className = 'surah-bismillah';
-                bismillah.textContent = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-                content.appendChild(bismillah);
-            }
-        }
+        displaySurahHeader(content, firstAyah.surah);
     }
     
     // عرض الآيات
@@ -292,6 +274,24 @@ function displayPage(pageNumber) {
     }
 }
 
+// ===== عرض رأس السورة =====
+function displaySurahHeader(content, surahNumber) {
+    const surahInfo = surahNames.find(s => s.number === surahNumber);
+    if (surahInfo) {
+        const surahHeader = document.createElement('div');
+        surahHeader.className = 'surah-header';
+        surahHeader.innerHTML = `سورة ${surahInfo.name}`;
+        content.appendChild(surahHeader);
+        
+        if (surahNumber !== 1 && surahNumber !== 9) {
+            const bismillah = document.createElement('div');
+            bismillah.className = 'surah-bismillah';
+            bismillah.textContent = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+            content.appendChild(bismillah);
+        }
+    }
+}
+
 // ===== تحويل الأرقام إلى عربية =====
 function convertToArabicNumbers(number) {
     const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -304,7 +304,7 @@ function convertToArabicNumbers(number) {
 function applyFontSize() {
     const content = document.getElementById('pageContent');
     content.style.fontSize = currentFontSize + 'rem';
-    content.style.lineHeight = (currentFontSize * 1.4) + 'rem';
+    content.style.lineHeight = (currentFontSize * 1.5) + 'rem';
 }
 
 // ===== عرض نافذة السور =====
@@ -370,12 +370,6 @@ function showSearchModal() {
     document.getElementById('searchInput').focus();
 }
 
-// ===== عرض نافذة حول =====
-function showAboutModal() {
-    const modal = document.getElementById('aboutModal');
-    modal.classList.remove('hidden');
-}
-
 // ===== الانتقال إلى سورة =====
 function goToSurah(surahNumber) {
     const firstAyah = quranData.find(a => a.surah === surahNumber);
@@ -413,7 +407,7 @@ function performSearch() {
     resultsContainer.innerHTML = '';
     
     if (!searchText) {
-        resultsContainer.innerHTML = '<div style="text-align:center;padding:20px;">الرجاء إدخال نص للبحث</div>';
+        resultsContainer.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">الرجاء إدخال نص للبحث</div>';
         return;
     }
     
@@ -462,7 +456,7 @@ function performSearch() {
     }
     
     if (results.length === 0) {
-        resultsContainer.innerHTML = '<div style="text-align:center;padding:20px;">لا توجد نتائج</div>';
+        resultsContainer.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">لا توجد نتائج</div>';
         return;
     }
     
@@ -474,7 +468,7 @@ function performSearch() {
         const surahName = surahInfo ? surahInfo.name : '';
         
         resultItem.innerHTML = `
-            <div style="font-weight:bold;color:#1a472a;margin-bottom:5px;">
+            <div style="font-weight:bold;color:#c9a84c;margin-bottom:5px;">
                 سورة ${surahName} - آية ${convertToArabicNumbers(ayah.ayah)}
             </div>
             <div style="font-size:1.1rem;">${ayah.text}</div>
@@ -532,12 +526,12 @@ function handleKeyboardShortcuts(event) {
     // الأسهم للتنقل
     if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        goToNextPage();
+        goToPreviousPage();
     }
     
     if (event.key === 'ArrowRight') {
         event.preventDefault();
-        goToPreviousPage();
+        goToNextPage();
     }
     
     // Ctrl + F للبحث
