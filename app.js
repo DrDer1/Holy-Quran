@@ -10,6 +10,7 @@ let currentSurahNumber = 1;
 let currentJuzNumber = 1;
 let isFirstLaunch = false;
 let isShowingOpening = true;
+let quranData = [];
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -39,6 +40,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     // تفعيل السحب
     setupSwipeGestures();
 });
+
+// ===== تحميل القرآن من quran.json =====
+async function loadQuran() {
+    try {
+        const response = await fetch('quran.json');
+        const data = await response.json();
+        
+        // التحقق من بنية البيانات
+        if (data.surahs && Array.isArray(data.surahs)) {
+            // البنية: { surahs: [{ number, name, ayahs: [{ number, text }] }] }
+            quranData = [];
+            data.surahs.forEach(surah => {
+                surah.ayahs.forEach(ayah => {
+                    quranData.push({
+                        surah: surah.number,
+                        ayah: ayah.number,
+                        text: ayah.text
+                    });
+                });
+            });
+        } else if (Array.isArray(data)) {
+            // البنية: [{ surah, ayah, text }]
+            quranData = data.map(item => ({
+                surah: item.surah || item.surahNumber || item.s,
+                ayah: item.ayah || item.ayahNumber || item.a,
+                text: item.text || item.ayahText || item.t
+            })).filter(item => item.text && item.text.length > 0);
+        } else if (data.quran && Array.isArray(data.quran)) {
+            // البنية: { quran: [{ surah, ayah, text }] }
+            quranData = data.quran.map(item => ({
+                surah: item.surah || item.surahNumber || item.s,
+                ayah: item.ayah || item.ayahNumber || item.a,
+                text: item.text || item.ayahText || item.t
+            })).filter(item => item.text && item.text.length > 0);
+        } else {
+            console.error('بنية غير معروفة في quran.json');
+            quranData = [];
+        }
+        
+        console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
+        return true;
+    } catch (error) {
+        console.error('خطأ في تحميل القرآن:', error);
+        return false;
+    }
+}
 
 // ===== تحميل الإعدادات =====
 function loadSettings() {
@@ -74,7 +121,6 @@ function determineInitialView() {
         // تشغيل لاحق - فتح آخر موضع مباشرة
         showMushafPage();
         displayPage(currentPageNumber);
-        document.getElementById('topBar').classList.remove('hidden');
     }
 }
 
@@ -262,9 +308,8 @@ function handleSwipe() {
     }
     
     if (isShowingOpening) {
-        // في الصفحة الافتتاحية - أي سحب يفتح المصحف
+        // في الصفحة الافتتاحية - أي سحب لليسار يفتح المصحف
         if (swipeDistance < 0) {
-            // سحب لليسار - فتح المصحف
             showMushafPage();
             displayPage(1);
             isFirstLaunch = false;
