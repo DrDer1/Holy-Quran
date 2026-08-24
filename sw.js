@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quran-v1.0.0';
+const CACHE_NAME = 'quran-v2.0.0';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -87,55 +87,11 @@ self.addEventListener('fetch', (event) => {
                         return response;
                     })
                     .catch(() => {
-                        // إذا فشل الاتصال، إرجاع صفحة الخطأ
+                        // إذا فشل الاتصال، إرجاع الصفحة الرئيسية
                         if (event.request.mode === 'navigate') {
                             return caches.match('/index.html');
                         }
                     });
             })
-    );
-});
-
-// التعامل مع الرسائل من الصفحة الرئيسية
-self.addEventListener('message', (event) => {
-    if (event.data === 'skipWaiting') {
-        self.skipWaiting();
-    }
-});
-
-// مزامنة البيانات في الخلفية
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-quran-data') {
-        event.waitUntil(syncQuranData());
-    }
-});
-
-// دالة مزامنة البيانات
-async function syncQuranData() {
-    try {
-        const cache = await caches.open(CACHE_NAME);
-        const response = await fetch('/quran.txt');
-        
-        if (response.ok) {
-            await cache.put('/quran.txt', response);
-            console.log('تم تحديث بيانات القرآن');
-        }
-    } catch (error) {
-        console.error('فشل تحديث البيانات:', error);
-    }
-}
-
-// إشعارات الدفع (اختياري)
-self.addEventListener('push', (event) => {
-    const options = {
-        body: 'حان وقت قراءة القرآن',
-        icon: '/192.png',
-        badge: '/192.png',
-        dir: 'rtl',
-        lang: 'ar'
-    };
-    
-    event.waitUntil(
-        self.registration.showNotification('المصحف الكريم', options)
     );
 });
