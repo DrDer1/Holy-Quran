@@ -8,17 +8,91 @@ let fontSize = 100;
 let lastRead = null;
 
 // ============================================================
-// LOAD DATA
+// LOAD DATA - قراءة ملف quran.txt
 // ============================================================
 
 async function loadQuran() {
     try {
-        const response = await fetch('quran.json');
-        QURAN_DATA = await response.json();
-        console.log('✅ تم تحميل القرآن بنجاح');
+        console.log('📂 جاري تحميل القرآن من quran.txt...');
+        const response = await fetch('quran.txt');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        console.log('📄 تم تحميل النص، الطول:', text.length, 'حرف');
+        
+        // تحويل النص إلى JSON
+        const lines = text.split('\n');
+        QURAN_DATA = {};
+        let ayahCount = 0;
+        let surahCount = 0;
+        
+        lines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+            
+            const parts = line.split('|');
+            if (parts.length >= 3) {
+                const surah = parseInt(parts[0]);
+                const ayah = parseInt(parts[1]);
+                const content = parts.slice(2).join('|');
+                
+                if (!QURAN_DATA[surah]) {
+                    QURAN_DATA[surah] = [];
+                    surahCount++;
+                }
+                QURAN_DATA[surah].push({ ayah, text: content });
+                ayahCount++;
+            }
+        });
+        
+        console.log(`✅ تم التحميل بنجاح!`);
+        console.log(`📖 عدد السور: ${surahCount}`);
+        console.log(`📜 عدد الآيات: ${ayahCount}`);
+        
+        // عرض أول سورة كتجربة
+        const firstSurah = Math.min(...Object.keys(QURAN_DATA).map(Number));
+        console.log(`📖 مثال: سورة ${firstSurah} - أول آية:`, QURAN_DATA[firstSurah][0].text.substring(0, 30) + '...');
+        
     } catch(e) {
-        console.warn('⚠️ لم يتم العثور على quran.json');
-        alert('❌ خطأ: لم يتم العثور على ملف quran.json');
+        console.error('❌ خطأ في تحميل القرآن:', e);
+        document.getElementById('surahList').innerHTML = `
+            <div class="no-results" style="padding:40px;text-align:center;">
+                <span>⚠️</span>
+                <h3 style="color:#d4af37;margin-top:10px;">لم يتم العثور على ملف القرآن</h3>
+                <p style="color:#888;margin-top:10px;">
+                    تأكد من وجود ملف <strong style="color:#d4af37;">quran.txt</strong> في نفس المجلد
+                </p>
+                <p style="color:#555;font-size:0.8em;margin-top:5px;">
+                    📁 المسار المتوقع: <span style="color:#666;">/quran.txt</span>
+                </p>
+                <button onclick="location.reload()" style="
+                    margin-top:15px;
+                    background:#d4af37;
+                    color:#0a0e17;
+                    border:none;
+                    padding:10px 30px;
+                    border-radius:25px;
+                    font-size:1em;
+                    cursor:pointer;
+                    font-family:inherit;
+                ">🔄 إعادة المحاولة</button>
+            </div>
+        `;
+        return;
+    }
+    
+    // التأكد من وجود بيانات
+    if (Object.keys(QURAN_DATA).length === 0) {
+        document.getElementById('surahList').innerHTML = `
+            <div class="no-results" style="padding:40px;text-align:center;">
+                <span>📭</span>
+                <h3 style="color:#d4af37;margin-top:10px;">الملف فارغ أو غير صحيح</h3>
+                <p style="color:#888;margin-top:10px;">تأكد من أن الملف يحتوي على بيانات بصيغة: سورة|آية|نص</p>
+            </div>
+        `;
         return;
     }
     
