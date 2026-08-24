@@ -1,72 +1,141 @@
-// ============================================================
-// SERVICE WORKER - لتشغيل التطبيق بدون إنترنت
-// ============================================================
-
-const CACHE_NAME = 'quran-cache-v3';
-const ASSETS = [
-    'index.html',
-    'style.css',
-    'app.js',
-    'quran.js',
-    'quran.json',
-    'manifest.json',
-    '192.png',
-    '512.png'
+const CACHE_NAME = 'quran-v1.0.0';
+const ASSETS_TO_CACHE = [
+    '/',
+    '/index.html',
+    '/style.css',
+    '/app.js',
+    '/quran.js',
+    '/quran.txt',
+    '/manifest.json',
+    '/192.png',
+    '/512.png'
 ];
 
-// تثبيت الـ Service Worker
-self.addEventListener('install', event => {
+// تثبيت Service Worker
+self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('📦 Caching assets...');
-                return cache.addAll(ASSETS);
+            .then((cache) => {
+                console.log('تخزين الملفات...');
+                return cache.addAll(ASSETS_TO_CACHE);
             })
-            .then(() => self.skipWaiting())
+            .then(() => {
+                console.log('تم تثبيت التطبيق بنجاح');
+                return self.skipWaiting();
+            })
     );
 });
 
-// تفعيل الـ Service Worker
-self.addEventListener('activate', event => {
+// تفعيل Service Worker
+self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then(keys => {
-            return Promise.all(
-                keys.filter(key => key !== CACHE_NAME)
-                    .map(key => caches.delete(key))
-            );
-        }).then(() => self.clients.claim())
+        caches.keys()
+            .then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            console.log('حذف الكاش القديم:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+            .then(() => {
+                console.log('تم تفعيل Service Worker');
+                return self.clients.claim();
+            })
     );
 });
 
-// اعتراض الطلبات
-self.addEventListener('fetch', event => {
+// استراتيجية التخزين: Cache First مع تحديث في الخلفية
+self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request)
-            .then(response => {
-                // إذا وجد في الكاش، أرجع منه
-                if (response) {
-                    return response;
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    // تحديث الكاش في الخلفية
+                    fetch(event.request)
+                        .then((response) => {
+                            if (response.ok) {
+                                const responseClone = response.clone();
+                                caches.open(CACHE_NAME)
+                                    .then((cache) => {
+                                        cache.put(event.request, responseClone);
+                                    });
+                            }
+                        })
+                        .catch(() => {
+                            // تجاهل أخطاء الشبكة
+                        });
+                    
+                    return cachedResponse;
                 }
-                // وإلا، حاول من الشبكة
+                
+                // إذا لم يكن الملف في الكاش، جلبه من الشبكة
                 return fetch(event.request)
-                    .then(response => {
-                        // إذا كان الاستجابة صالحة، خزنها في الكاش
-                        if (response && response.status === 200) {
-                            const clone = response.clone();
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    cache.put(event.request, clone);
-                                });
+                    .then((response) => {
+                        if (!response || response.status !== 200 || response.type !== 'basic') {
+                            return response;
                         }
+                        
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME)
+                            .then((cache) => {
+                                cache.put(event.request, responseClone);
+                            });
+                        
                         return response;
                     })
                     .catch(() => {
-                        // إذا لم يكن هناك اتصال ولا كاش
-                        return new Response('⚠️ لا يوجد اتصال بالإنترنت', {
-                            status: 503,
-                            statusText: 'Service Unavailable'
-                        });
+                        // إذا فشل الاتصال، إرجاع صفحة الخطأ
+                        if (event.request.mode === 'navigate') {
+                            return caches.match('/index.html');
+                        }
                     });
             })
+    );
+});
+
+// التعامل مع الرسائل من الصفحة الرئيسية
+self.addEventListener('message', (event) => {
+    if (event.data === 'skipWaiting') {
+        self.skipWaiting();
+    }
+});
+
+// مزامنة البيانات في الخلفية
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-quran-data') {
+        event.waitUntil(syncQuranData());
+    }
+});
+
+// دالة مزامنة البيانات
+async function syncQuranData() {
+    try {
+        const cache = await caches.open(CACHE_NAME);
+        const response = await fetch('/quran.txt');
+        
+        if (response.ok) {
+            await cache.put('/quran.txt', response);
+            console.log('تم تحديث بيانات القرآن');
+        }
+    } catch (error) {
+        console.error('فشل تحديث البيانات:', error);
+    }
+}
+
+// إشعارات الدفع (اختياري)
+self.addEventListener('push', (event) => {
+    const options = {
+        body: 'حان وقت قراءة القرآن',
+        icon: '/192.png',
+        badge: '/192.png',
+        dir: 'rtl',
+        lang: 'ar'
+    };
+    
+    event.waitUntil(
+        self.registration.showNotification('المصحف الكريم', options)
     );
 });
