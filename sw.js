@@ -1,11 +1,11 @@
-const CACHE_NAME = 'quran-v1.0.0';
+const CACHE_NAME = 'quran-v5.0.0';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
     '/style.css',
     '/app.js',
     '/quran.js',
-    '/quran.txt',
+    '/quran.json',
     '/manifest.json',
     '/192.png',
     '/512.png'
