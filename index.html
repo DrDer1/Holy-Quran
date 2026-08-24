@@ -14,16 +14,12 @@
 <body>
 
 <div class="app-container" id="app">
-    <!-- HEADER -->
     <div class="header">
         <h1>﷽</h1>
         <div class="subtitle">المصحف الكريم — القراءة فقط</div>
-        <div class="last-read" id="lastReadBtn" onclick="goToLastRead()">
-            📖 استئناف القراءة
-        </div>
+        <div class="last-read" id="lastReadBtn" onclick="goToLastRead()">📖 استئناف القراءة</div>
     </div>
 
-    <!-- CONTROLS -->
     <div class="controls">
         <div class="font-controls">
             <button class="font-size-btn" onclick="changeFontSize(-2)">A-</button>
@@ -33,26 +29,22 @@
         <button onclick="resetFontSize()" style="font-size:0.8em;">↺ إعادة</button>
     </div>
 
-    <!-- TABS -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('surah')" id="tabSurah">📖 السور</button>
         <button class="tab-btn" onclick="switchTab('juz')" id="tabJuz">📚 الأجزاء</button>
         <button class="tab-btn" onclick="switchTab('search')" id="tabSearch">🔍 بحث</button>
     </div>
 
-    <!-- TAB: SURAH LIST -->
     <div class="tab-content active" id="tabContentSurah">
         <div class="surah-list" id="surahList"></div>
     </div>
 
-    <!-- TAB: JUZ LIST -->
     <div class="tab-content" id="tabContentJuz">
         <div class="section-title">اختر الجزء</div>
         <div class="juz-grid" id="juzGrid"></div>
         <div id="juzResult" style="margin-top:15px;"></div>
     </div>
 
-    <!-- TAB: SEARCH -->
     <div class="tab-content" id="tabContentSearch">
         <div class="section-title">البحث في القرآن</div>
         <div class="search-section">
@@ -65,14 +57,12 @@
         <div id="searchResults"></div>
     </div>
 
-    <!-- AYAH SCREEN -->
     <div class="ayah-screen" id="ayahScreen">
         <button class="back-btn" onclick="closeAyahScreen()">↩ العودة</button>
         <div class="surah-title" id="surahTitle"></div>
         <div class="ayah-list" id="ayahList"></div>
     </div>
 
-    <!-- SAVE INDICATOR -->
     <div class="save-indicator" id="saveIndicator">✓ تم الحفظ</div>
 </div>
 
