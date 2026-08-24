@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <meta name="theme-color" content="#0a0e17">
+    <meta name="description" content="المصحف الكريم - قراءة القرآن بدون إنترنت">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="192.png">
+    <title>المصحف الكريم</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container" id="app">
+    <!-- HEADER -->
+    <div class="header">
+        <h1>﷽</h1>
+        <div class="subtitle">المصحف الكريم — القراءة فقط</div>
+        <div class="last-read" id="lastReadBtn" onclick="goToLastRead()">
+            📖 استئناف القراءة
+        </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+        <div class="font-controls">
+            <button class="font-size-btn" onclick="changeFontSize(-2)">A-</button>
+            <span id="fontSizeDisplay" style="color:#888;min-width:40px;text-align:center;">100%</span>
+            <button class="font-size-btn" onclick="changeFontSize(2)">A+</button>
+        </div>
+        <button onclick="resetFontSize()" style="font-size:0.8em;">↺ إعادة</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('surah')" id="tabSurah">📖 السور</button>
+        <button class="tab-btn" onclick="switchTab('juz')" id="tabJuz">📚 الأجزاء</button>
+        <button class="tab-btn" onclick="switchTab('search')" id="tabSearch">🔍 بحث</button>
+    </div>
+
+    <!-- TAB: SURAH LIST -->
+    <div class="tab-content active" id="tabContentSurah">
+        <div class="surah-list" id="surahList"></div>
+    </div>
+
+    <!-- TAB: JUZ LIST -->
+    <div class="tab-content" id="tabContentJuz">
+        <div class="section-title">اختر الجزء</div>
+        <div class="juz-grid" id="juzGrid"></div>
+        <div id="juzResult" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- TAB: SEARCH -->
+    <div class="tab-content" id="tabContentSearch">
+        <div class="section-title">البحث في القرآن</div>
+        <div class="search-section">
+            <input type="text" id="searchText" placeholder="🔍 ابحث بكلمة أو نص..." onkeyup="if(event.key==='Enter') doSearch()">
+            <input type="number" id="searchAyah" placeholder="رقم الآية" min="1" onkeyup="if(event.key==='Enter') doSearch()">
+            <input type="number" id="searchJuz" placeholder="رقم الجزء (1-30)" min="1" max="30" onkeyup="if(event.key==='Enter') doSearch()">
+            <button class="search-btn" onclick="doSearch()">🔍 بحث</button>
+            <button class="clear-search" onclick="clearSearch()">✕ مسح</button>
+        </div>
+        <div id="searchResults"></div>
+    </div>
+
+    <!-- AYAH SCREEN -->
+    <div class="ayah-screen" id="ayahScreen">
+        <button class="back-btn" onclick="closeAyahScreen()">↩ العودة</button>
+        <div class="surah-title" id="surahTitle"></div>
+        <div class="ayah-list" id="ayahList"></div>
+    </div>
+
+    <!-- SAVE INDICATOR -->
+    <div class="save-indicator" id="saveIndicator">✓ تم الحفظ</div>
+</div>
+
+<script src="quran.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
