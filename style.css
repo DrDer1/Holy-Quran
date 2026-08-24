@@ -1,16 +1,19 @@
+/* ===== تحميل الخطوط ===== */
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
+
+@font-face {
+    font-family: 'QuranFont';
+    src: local('Amiri Quran'), local('KFGQPC Uthmanic Script HAFS'), local('Scheherazade New'), local('Amiri');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ===== إعدادات عامة ===== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-@font-face {
-    font-family: 'QuranFont';
-    src: local('Amiri Quran'), local('Amiri'), local('Scheherazade New'), local('KFGQPC Uthmanic Script HAFS'), local('Traditional Arabic');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
 }
 
 :root {
@@ -42,7 +45,7 @@ html, body {
 }
 
 body {
-    font-family: 'QuranFont', 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif;
+    font-family: 'Amiri Quran', 'QuranFont', 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', 'Amiri', serif;
     direction: rtl;
     user-select: none;
     -webkit-user-select: none;
@@ -407,6 +410,7 @@ body {
     flex-direction: column;
     justify-content: center;
     position: relative;
+    font-family: 'Amiri Quran', 'QuranFont', 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', 'Amiri', serif;
 }
 
 .page-number {
@@ -439,6 +443,7 @@ body {
     position: relative;
     flex-shrink: 0;
     letter-spacing: 1px;
+    font-family: 'Amiri Quran', 'QuranFont', 'Scheherazade New', 'Amiri', serif;
 }
 
 .surah-header::before,
@@ -467,6 +472,7 @@ body {
     text-align: center;
     flex-shrink: 0;
     letter-spacing: 0.5px;
+    font-family: 'Amiri Quran', 'QuranFont', 'Scheherazade New', 'Amiri', serif;
 }
 
 /* ===== الآيات ===== */
@@ -474,6 +480,9 @@ body {
     display: inline;
     text-align: justify;
     line-height: 2.1;
+    font-family: 'Amiri Quran', 'QuranFont', 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', 'Amiri', serif;
+    word-spacing: normal;
+    letter-spacing: normal;
 }
 
 .ayah-text {
@@ -481,6 +490,9 @@ body {
     color: #f0f0f0;
     font-size: inherit;
     line-height: inherit;
+    font-family: inherit;
+    unicode-bidi: embed;
+    direction: rtl;
 }
 
 .ayah-number {
@@ -498,6 +510,7 @@ body {
     vertical-align: middle;
     background: #0a0a0a;
     flex-shrink: 0;
+    font-family: 'QuranFont', 'Amiri', serif;
 }
 
 /* ===== صفحة الإهداء ===== */
