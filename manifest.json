@@ -1,13 +1,14 @@
 {
-    "name": "المصحف الكريم",
+    "name": "المصحف الكريم - النسخة الورقية",
     "short_name": "المصحف",
-    "description": "قراءة القرآن الكريم بدون إنترنت",
-    "start_url": "index.html",
+    "description": "تطبيق المصحف الكريم بتصميم ورقي تقليدي مع ميزات رقمية",
+    "start_url": "/",
     "display": "standalone",
-    "background_color": "#0a0e17",
-    "theme_color": "#0a0e17",
-    "dir": "rtl",
+    "orientation": "portrait",
+    "background_color": "#f4e4c1",
+    "theme_color": "#1a472a",
     "lang": "ar",
+    "dir": "rtl",
     "icons": [
         {
             "src": "192.png",
@@ -20,6 +21,25 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
+        }
+    ],
+    "categories": ["books", "education", "lifestyle"],
+    "prefer_related_applications": false,
+    "shortcuts": [
+        {
+            "name": "استئناف القراءة",
+            "url": "/?action=resume",
+            "description": "العودة إلى آخر موضع قراءة"
+        },
+        {
+            "name": "فهرس السور",
+            "url": "/?action=surahs",
+            "description": "فتح فهرس السور"
+        },
+        {
+            "name": "البحث",
+            "url": "/?action=search",
+            "description": "البحث في المصحف"
         }
     ]
 }
