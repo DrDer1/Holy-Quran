@@ -2,99 +2,118 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المصحف الكريم - القراءة العثمانية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المصحف الكريم</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="192.png">
     <link rel="apple-touch-icon" href="192.png">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- الحاوية الرئيسية -->
     <div id="mainContainer" class="main-container">
         
-        <!-- زر القائمة -->
-        <button id="menuToggle" class="menu-toggle">☰</button>
-        
-        <!-- القائمة الجانبية -->
-        <div id="sideMenu" class="side-menu">
-            <div class="menu-header">
-                <h3>المصحف الكريم</h3>
-                <button id="closeMenu" class="close-menu">&times;</button>
+        <!-- الشريط العلوي -->
+        <header class="top-bar">
+            <button id="searchBtn" class="top-btn" aria-label="بحث">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+            
+            <div class="page-info">
+                <span id="topSurahName" class="surah-name-top">سُورَةُ الْفَاتِحَةِ</span>
+                <span id="topJuzName" class="juz-name-top">الجزء الأول</span>
             </div>
             
-            <div class="menu-items">
-                <button id="menuSurahs" class="menu-item">
-                    <span class="menu-icon">📚</span>
-                    فهرس السور
+            <button id="menuToggle" class="top-btn" aria-label="قائمة">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </header>
+        
+        <!-- القائمة الجانبية -->
+        <div id="sideMenuOverlay" class="side-menu-overlay"></div>
+        <div id="sideMenu" class="side-menu">
+            <div class="side-menu-header">
+                <span class="side-menu-title">القائمة</span>
+                <button id="closeMenu" class="close-menu-btn">×</button>
+            </div>
+            
+            <div class="side-menu-items">
+                <button id="menuQuran" class="side-menu-item">
+                    <span class="side-menu-icon">📖</span>
+                    <span>المصحف</span>
                 </button>
                 
-                <button id="menuJuz" class="menu-item">
-                    <span class="menu-icon">📖</span>
-                    فهرس الأجزاء
+                <button id="menuIndex" class="side-menu-item">
+                    <span class="side-menu-icon">📋</span>
+                    <span>الفهرس</span>
                 </button>
                 
-                <button id="menuSearch" class="menu-item">
-                    <span class="menu-icon">🔍</span>
-                    البحث
+                <button id="menuBookmarks" class="side-menu-item">
+                    <span class="side-menu-icon">🔖</span>
+                    <span>المواضع المحفوظة</span>
                 </button>
                 
-                <button id="menuBookmark" class="menu-item">
-                    <span class="menu-icon">📑</span>
-                    العلامة المرجعية
+                <button id="menuDedication" class="side-menu-item">
+                    <span class="side-menu-icon">🕌</span>
+                    <span>الإهداء</span>
                 </button>
                 
-                <div class="menu-divider"></div>
+                <div class="side-menu-divider"></div>
                 
                 <div class="font-controls">
-                    <span class="font-label">حجم الخط:</span>
+                    <span class="font-label">حجم الخط</span>
                     <div class="font-buttons">
                         <button id="fontPlus" class="font-btn">أ+</button>
                         <button id="fontMinus" class="font-btn">أ-</button>
                     </div>
                 </div>
+                
+                <button id="saveBookmarkBtn" class="side-menu-item bookmark-save-btn">
+                    <span class="side-menu-icon">💾</span>
+                    <span>حفظ الموضع الحالي</span>
+                </button>
             </div>
         </div>
         
-        <!-- صفحة المصحف -->
-        <div id="quranPage" class="quran-page">
-            <div class="page-decorative-border">
-                <div class="page-ornament-top">❁</div>
-                <div class="page-content-wrapper">
-                    <div id="pageContent" class="page-content"></div>
+        <!-- منطقة صفحة المصحف -->
+        <main class="quran-area">
+            <div id="quranPage" class="quran-page">
+                <div class="page-frame-outer">
+                    <div class="page-frame-inner">
+                        <div class="page-content" id="pageContent">
+                            <!-- محتوى الصفحة -->
+                        </div>
+                        <div class="page-number" id="pageNumber">١</div>
+                    </div>
                 </div>
-                <div class="page-ornament-bottom">❁</div>
-                <div class="page-number" id="pageNumber">١</div>
             </div>
-        </div>
+        </main>
         
-        <!-- نوافذ منبثقة -->
-        <div id="surahModal" class="modal">
+        <!-- نافذة الفهرس -->
+        <div id="indexModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>فهرس السور</h2>
-                    <button class="close-modal">&times;</button>
+                    <button class="close-modal">×</button>
                 </div>
-                <div class="modal-body" id="surahList"></div>
+                <div class="modal-body" id="indexList"></div>
             </div>
         </div>
         
-        <div id="juzModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>فهرس الأجزاء</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="modal-body" id="juzList"></div>
-            </div>
-        </div>
-        
+        <!-- نافذة البحث -->
         <div id="searchModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>البحث في المصحف</h2>
-                    <button class="close-modal">&times;</button>
+                    <h2>البحث</h2>
+                    <button class="close-modal">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="search-box">
@@ -105,11 +124,43 @@
                             <option value="juz">رقم الجزء</option>
                         </select>
                         <input type="text" id="searchInput" placeholder="اكتب للبحث...">
-                        <button id="searchBtn">بحث</button>
+                        <button id="searchExecute">بحث</button>
                     </div>
                     <div id="searchResults" class="search-results"></div>
                 </div>
             </div>
+        </div>
+        
+        <!-- نافذة المواضع المحفوظة -->
+        <div id="bookmarksModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>المواضع المحفوظة</h2>
+                    <button class="close-modal">×</button>
+                </div>
+                <div class="modal-body" id="bookmarksList"></div>
+            </div>
+        </div>
+        
+        <!-- صفحة الإهداء -->
+        <div id="dedicationPage" class="dedication-page hidden">
+            <div class="page-frame-outer">
+                <div class="page-frame-inner">
+                    <div class="dedication-content">
+                        <div class="dedication-ornament-top">❁</div>
+                        <h1 class="dedication-title">إهــداء</h1>
+                        <div class="dedication-text" id="dedicationText">
+                            <p>إلى من علمني حرفاً...</p>
+                            <p>إلى والديّ الكريمين</p>
+                            <p>وإلى كل من يبحث عن نور القرآن</p>
+                            <p>أهدي هذا العمل</p>
+                            <p>سائلاً المولى أن يجعله خالصاً لوجهه الكريم</p>
+                        </div>
+                        <div class="dedication-ornament-bottom">❁</div>
+                    </div>
+                </div>
+            </div>
+            <button id="backFromDedication" class="back-btn">↩ رجوع</button>
         </div>
     </div>
 
