@@ -11,6 +11,7 @@ let currentJuzNumber = 1;
 let isFirstLaunch = false;
 let isShowingOpening = true;
 let quranData = [];
+let surahList = [];
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -47,39 +48,30 @@ async function loadQuran() {
         const response = await fetch('quran.json');
         const data = await response.json();
         
-        // التحقق من بنية البيانات
-        if (data.surahs && Array.isArray(data.surahs)) {
-            // البنية: { surahs: [{ number, name, ayahs: [{ number, text }] }] }
-            quranData = [];
-            data.surahs.forEach(surah => {
-                surah.ayahs.forEach(ayah => {
-                    quranData.push({
-                        surah: surah.number,
-                        ayah: ayah.number,
-                        text: ayah.text
-                    });
+        quranData = [];
+        surahList = [];
+        
+        data.forEach(surah => {
+            // إضافة بيانات السورة
+            surahList.push({
+                number: surah.id,
+                name: surah.name,
+                ayahs: surah.total_verses,
+                type: surah.type === 'meccan' ? 'مكية' : 'مدنية'
+            });
+            
+            // إضافة الآيات
+            surah.verses.forEach(ayah => {
+                quranData.push({
+                    surah: surah.id,
+                    ayah: ayah.id,
+                    text: ayah.text
                 });
             });
-        } else if (Array.isArray(data)) {
-            // البنية: [{ surah, ayah, text }]
-            quranData = data.map(item => ({
-                surah: item.surah || item.surahNumber || item.s,
-                ayah: item.ayah || item.ayahNumber || item.a,
-                text: item.text || item.ayahText || item.t
-            })).filter(item => item.text && item.text.length > 0);
-        } else if (data.quran && Array.isArray(data.quran)) {
-            // البنية: { quran: [{ surah, ayah, text }] }
-            quranData = data.quran.map(item => ({
-                surah: item.surah || item.surahNumber || item.s,
-                ayah: item.ayah || item.ayahNumber || item.a,
-                text: item.text || item.ayahText || item.t
-            })).filter(item => item.text && item.text.length > 0);
-        } else {
-            console.error('بنية غير معروفة في quran.json');
-            quranData = [];
-        }
+        });
         
         console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
+        console.log('عدد السور:', surahList.length);
         return true;
     } catch (error) {
         console.error('خطأ في تحميل القرآن:', error);
@@ -432,7 +424,7 @@ function displayPage(pageNumber) {
 
 // ===== عرض رأس السورة =====
 function displaySurahHeader(content, surahNumber) {
-    const surahInfo = surahNames.find(s => s.number === surahNumber);
+    const surahInfo = surahList.find(s => s.number === surahNumber);
     if (surahInfo) {
         const surahHeader = document.createElement('div');
         surahHeader.className = 'surah-header';
@@ -450,7 +442,7 @@ function displaySurahHeader(content, surahNumber) {
 
 // ===== تحديث الشريط العلوي =====
 function updateTopBar() {
-    const surahInfo = surahNames.find(s => s.number === currentSurahNumber);
+    const surahInfo = surahList.find(s => s.number === currentSurahNumber);
     if (surahInfo) {
         document.getElementById('topSurahName').textContent = `سُورَةُ ${surahInfo.name}`;
     }
@@ -495,7 +487,7 @@ function showIndexModal() {
     modal.classList.remove('hidden');
     list.innerHTML = '';
     
-    surahNames.forEach(surah => {
+    surahList.forEach(surah => {
         const item = document.createElement('div');
         item.className = 'index-item';
         item.innerHTML = `
@@ -537,7 +529,7 @@ function showBookmarksModal() {
         const item = document.createElement('div');
         item.className = 'bookmark-item';
         
-        const surahInfo = surahNames.find(s => s.number === bookmark.surah);
+        const surahInfo = surahList.find(s => s.number === bookmark.surah);
         const surahName = surahInfo ? surahInfo.name : '';
         
         item.innerHTML = `
@@ -656,7 +648,7 @@ function performSearch() {
         const resultItem = document.createElement('div');
         resultItem.className = 'search-result-item';
         
-        const surahInfo = surahNames.find(s => s.number === ayah.surah);
+        const surahInfo = surahList.find(s => s.number === ayah.surah);
         const surahName = surahInfo ? surahInfo.name : '';
         
         resultItem.innerHTML = `
