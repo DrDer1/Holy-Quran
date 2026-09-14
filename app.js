@@ -26,19 +26,10 @@ const DEDICATION_TEXT = `
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('تهيئة المصحف...');
     
-    // تحميل البيانات
     await loadQuran();
-    
-    // استعادة الإعدادات
     loadSettings();
-    
-    // تهيئة الواجهة
     initializeUI();
-    
-    // تحديد الصفحة الافتتاحية أو آخر موضع
     determineInitialView();
-    
-    // تفعيل السحب
     setupSwipeGestures();
 });
 
@@ -52,7 +43,6 @@ async function loadQuran() {
         surahList = [];
         
         data.forEach(surah => {
-            // إضافة بيانات السورة
             surahList.push({
                 number: surah.id,
                 name: surah.name,
@@ -60,7 +50,6 @@ async function loadQuran() {
                 type: surah.type === 'meccan' ? 'مكية' : 'مدنية'
             });
             
-            // إضافة الآيات
             surah.verses.forEach(ayah => {
                 quranData.push({
                     surah: surah.id,
@@ -71,7 +60,6 @@ async function loadQuran() {
         });
         
         console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
-        console.log('عدد السور:', surahList.length);
         return true;
     } catch (error) {
         console.error('خطأ في تحميل القرآن:', error);
@@ -81,13 +69,11 @@ async function loadQuran() {
 
 // ===== تحميل الإعدادات =====
 function loadSettings() {
-    // استعادة حجم الخط
     const savedFontSize = localStorage.getItem('quranFontSize');
     if (savedFontSize) {
         currentFontSize = parseFloat(savedFontSize);
     }
     
-    // استعادة التقدم
     const savedProgress = localStorage.getItem('quranProgress');
     if (savedProgress) {
         const progress = JSON.parse(savedProgress);
@@ -97,7 +83,6 @@ function loadSettings() {
         isFirstLaunch = true;
     }
     
-    // استعادة المواضع المحفوظة
     const savedBookmarks = localStorage.getItem('quranBookmarks');
     if (savedBookmarks) {
         bookmarks = JSON.parse(savedBookmarks);
@@ -107,10 +92,8 @@ function loadSettings() {
 // ===== تحديد العرض الأولي =====
 function determineInitialView() {
     if (isFirstLaunch) {
-        // أول تشغيل - عرض الصفحة الافتتاحية
         showOpeningPage();
     } else {
-        // تشغيل لاحق - فتح آخر موضع مباشرة
         showMushafPage();
         displayPage(currentPageNumber);
     }
@@ -134,12 +117,10 @@ function showMushafPage() {
 
 // ===== تهيئة الواجهة =====
 function initializeUI() {
-    // زر القائمة
     document.getElementById('menuToggle').addEventListener('click', openMenu);
     document.getElementById('closeMenu').addEventListener('click', closeMenu);
     document.getElementById('sideMenuOverlay').addEventListener('click', closeMenu);
     
-    // عناصر القائمة
     document.getElementById('menuQuran').addEventListener('click', () => {
         closeMenu();
         goToLastPosition();
@@ -160,13 +141,11 @@ function initializeUI() {
         showDedicationPage();
     });
     
-    // زر حفظ الموضع
     document.getElementById('saveBookmarkBtn').addEventListener('click', () => {
         saveBookmark();
         closeMenu();
     });
     
-    // أزرار حجم الخط
     document.getElementById('fontPlus').addEventListener('click', () => {
         currentFontSize = Math.min(currentFontSize + 0.1, 1.8);
         applyFontSize();
@@ -179,17 +158,14 @@ function initializeUI() {
         saveFontSize();
     });
     
-    // زر البحث في الشريط العلوي
     document.getElementById('searchBtn').addEventListener('click', showSearchModal);
     
-    // إغلاق النوافذ
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
             btn.closest('.modal').classList.add('hidden');
         });
     });
     
-    // إغلاق النوافذ بالنقر خارجها
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -198,7 +174,6 @@ function initializeUI() {
         });
     });
     
-    // البحث
     document.getElementById('searchExecute').addEventListener('click', performSearch);
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -206,13 +181,10 @@ function initializeUI() {
         }
     });
     
-    // زر الرجوع من الإهداء
     document.getElementById('backFromDedication').addEventListener('click', hideDedicationPage);
     
-    // اختصارات لوحة المفاتيح
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
-    // تطبيق حجم الخط
     applyFontSize();
 }
 
@@ -296,16 +268,18 @@ function handleSwipe() {
         return;
     }
     
+    // في الصفحة الافتتاحية: أي سحب يفتح المصحف من الصفحة 1
     if (isShowingOpening) {
-        if (swipeDistance < 0) {
-            showMushafPage();
-            displayPage(1);
-            isFirstLaunch = false;
-        }
+        showMushafPage();
+        displayPage(1);
+        isFirstLaunch = false;
         return;
     }
     
-    if (swipeDistance > 0) {
+    // داخل المصحف:
+    // سحب لليسار (swipeDistance < 0) = الصفحة التالية
+    // سحب لليمين (swipeDistance > 0) = الصفحة السابقة
+    if (swipeDistance < 0) {
         goToNextPage();
     } else {
         goToPreviousPage();
@@ -363,7 +337,6 @@ function displayPage(pageNumber) {
     currentJuzNumber = getJuzNumber(firstAyah.surah, firstAyah.ayah);
     updateTopBar();
     
-    // تجميع الآيات حسب السورة
     const surahGroups = {};
     pageAyahs.forEach(ayah => {
         if (!surahGroups[ayah.surah]) {
@@ -372,17 +345,14 @@ function displayPage(pageNumber) {
         surahGroups[ayah.surah].push(ayah);
     });
     
-    // عرض كل سورة
     const surahNumbers = Object.keys(surahGroups);
     
     surahNumbers.forEach((surahNumber, index) => {
         const surahNum = parseInt(surahNumber);
         const surahAyahs = surahGroups[surahNumber];
         
-        // عرض اسم السورة
         displaySurahHeader(content, surahNum);
         
-        // إنشاء حاوية الآيات
         const ayahsContainer = document.createElement('div');
         ayahsContainer.className = 'ayahs-container';
         
@@ -392,7 +362,6 @@ function displayPage(pageNumber) {
         
         content.appendChild(ayahsContainer);
         
-        // مسافة بين السور
         if (index < surahNumbers.length - 1) {
             const spacer = document.createElement('div');
             spacer.style.height = '20px';
@@ -690,7 +659,7 @@ function handleKeyboardShortcuts(event) {
     if (event.key === 'ArrowLeft') {
         event.preventDefault();
         if (!isShowingOpening) {
-            goToPreviousPage();
+            goToNextPage();
         }
     }
     
@@ -701,7 +670,7 @@ function handleKeyboardShortcuts(event) {
             displayPage(1);
             isFirstLaunch = false;
         } else {
-            goToNextPage();
+            goToPreviousPage();
         }
     }
     
