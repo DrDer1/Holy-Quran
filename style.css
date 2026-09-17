@@ -31,6 +31,7 @@
     --silver-dark: #999999;
     --border-light: #666666;
     --border-lighter: #999999;
+    --error-red: #d9534f;
 }
 
 html, body {
@@ -54,6 +55,182 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+/* ===== شاشة التحميل ===== */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.loading-frame {
+    width: min(85%, 400px);
+    aspect-ratio: 9 / 16;
+    max-height: 90vh;
+    background: #000000;
+    border: 1px solid #555555;
+    border-radius: 2px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 0 0 3px #0a0a0a,
+        0 0 0 4px #444444,
+        0 0 0 7px #0a0a0a,
+        0 0 0 8px #333333,
+        0 20px 60px rgba(0,0,0,0.9);
+}
+
+.loading-ornament-top,
+.loading-ornament-bottom {
+    color: #999999;
+    font-size: 32px;
+    flex-shrink: 0;
+    padding: 15px 0;
+}
+
+.loading-content {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    padding: 20px;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #222222;
+    border-top: 3px solid #c0c0c0;
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: clamp(16px, 4vw, 22px);
+    color: #f0f0f0;
+    text-align: center;
+    font-family: 'UthmanicHafs', serif;
+    letter-spacing: 0.5px;
+}
+
+.loading-subtext {
+    font-size: clamp(12px, 3vw, 15px);
+    color: #888888;
+    text-align: center;
+    font-family: 'UthmanicHafs', serif;
+}
+
+/* ===== شاشة الخطأ ===== */
+.error-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.error-frame {
+    width: min(85%, 400px);
+    aspect-ratio: 9 / 16;
+    max-height: 90vh;
+    background: #000000;
+    border: 1px solid #555555;
+    border-radius: 2px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 0 0 3px #0a0a0a,
+        0 0 0 4px #444444,
+        0 0 0 7px #0a0a0a,
+        0 0 0 8px #333333,
+        0 20px 60px rgba(0,0,0,0.9);
+}
+
+.error-ornament-top,
+.error-ornament-bottom {
+    color: #d9534f;
+    font-size: 32px;
+    flex-shrink: 0;
+    padding: 15px 0;
+}
+
+.error-content {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.error-title {
+    font-size: clamp(18px, 4.5vw, 24px);
+    color: #f0f0f0;
+    text-align: center;
+    font-family: 'UthmanicHafs', serif;
+    font-weight: bold;
+}
+
+.error-message {
+    font-size: clamp(13px, 3vw, 16px);
+    color: #888888;
+    text-align: center;
+    font-family: 'UthmanicHafs', serif;
+    line-height: 1.6;
+    padding: 0 10px;
+}
+
+.retry-btn {
+    padding: 12px 30px;
+    background: #111111;
+    border: 1px solid #555555;
+    border-radius: 8px;
+    color: #f0f0f0;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'UthmanicHafs', serif;
+    transition: all 0.2s;
+    margin-top: 10px;
+}
+
+.retry-btn:hover {
+    background: #1a1a1a;
+    border-color: #888888;
+}
+
+.retry-btn:active {
+    transform: scale(0.97);
 }
 
 /* ===== الحاوية الرئيسية ===== */
@@ -907,6 +1084,16 @@ body {
     
     .opening-title {
         font-size: clamp(24px, 5vw, 34px);
+    }
+    
+    .loading-frame,
+    .error-frame {
+        width: min(88%, 360px);
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
     }
 }
 
