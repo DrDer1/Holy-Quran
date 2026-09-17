@@ -16,7 +16,6 @@ let pagesIndex = [];
 let db = null;
 
 // ===== إعدادات بناء الصفحات =====
-const WORDS_PER_PAGE = 80;
 const MAX_SURAHS_PER_PAGE = 2;
 const FIXED_FONT_SIZE_MOBILE = 16;
 const FIXED_FONT_SIZE_DESKTOP = 20;
@@ -213,7 +212,17 @@ function getWordCount(text) {
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات (حسب عدد الكلمات الثابت لكل صفحة) =====
+// ===== حساب وزن نص (عدد الأحرف بدون تشكيل) =====
+function getTextWeight(text) {
+    if (!text) return 0;
+    const cleaned = text
+        .replace(/[\u064B-\u065F\u0670]/g, '')
+        .replace(/[\u06D6-\u06ED]/g, '')
+        .trim();
+    return cleaned.length;
+}
+
+// ===== بناء فهرس الصفحات (بدون عدد ثابت — حسب الوزن) =====
 function buildPagesIndex() {
     pagesIndex = [];
     
@@ -233,21 +242,24 @@ function buildPagesIndex() {
         isFatihaPage: true
     });
     
-    // ===== باقي الصفحات (حسب عدد الكلمات) =====
+    // ===== باقي الصفحات (بدون حد ثابت — فقط حد السورتين + حدود طبيعية) =====
+    // نستخدم وزن تقريبي للتوزيع بناءً على 1000 حرف
+    const TARGET_WEIGHT = 1000;
+    
     let pageStart = fatihaEnd;
-    let currentWords = 0;
+    let currentWeight = 0;
     let currentSurahCount = 0;
     let lastSurah = quranData[fatihaEnd]?.surah || 0;
     
     for (let i = fatihaEnd; i < quranData.length; i++) {
         const ayah = quranData[i];
-        const ayahWords = getWordCount(ayah.text);
+        const ayahWeight = getTextWeight(ayah.text);
         
         const isNewSurah = ayah.surah !== lastSurah;
         const wouldExceedSurahLimit = isNewSurah && (currentSurahCount + 1) > MAX_SURAHS_PER_PAGE;
-        const wouldExceedWords = (currentWords + ayahWords) > WORDS_PER_PAGE;
+        const wouldExceedWeight = (currentWeight + ayahWeight) > TARGET_WEIGHT;
         
-        const shouldBreak = (wouldExceedSurahLimit || wouldExceedWords) && i > pageStart;
+        const shouldBreak = (wouldExceedSurahLimit || wouldExceedWeight) && i > pageStart;
         
         if (shouldBreak) {
             pagesIndex.push({
@@ -256,7 +268,7 @@ function buildPagesIndex() {
             });
             
             pageStart = i;
-            currentWords = ayahWords;
+            currentWeight = ayahWeight;
             currentSurahCount = 1;
             lastSurah = ayah.surah;
         } else {
@@ -264,7 +276,7 @@ function buildPagesIndex() {
                 currentSurahCount++;
                 lastSurah = ayah.surah;
             }
-            currentWords += ayahWords;
+            currentWeight += ayahWeight;
         }
     }
     
@@ -276,7 +288,7 @@ function buildPagesIndex() {
     }
     
     totalPages = pagesIndex.length;
-    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة (بحجم خط ثابت)');
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -322,7 +334,8 @@ function processQuranData(data) {
                 ayah: ayah.id,
                 text: ayah.text.trim(),
                 normalizedText: normalizeArabic(ayah.text),
-                wordCount: getWordCount(ayah.text)
+                wordCount: getWordCount(ayah.text),
+                weight: getTextWeight(ayah.text)
             });
         });
     });
@@ -665,7 +678,7 @@ function updatePageNumber(pageNumber) {
     pageNumberElement.textContent = convertToArabicNumbers(pageNumber);
 }
 
-// ===== تطبيق حجم خط ثابت (لا يتغير بين الصفحات) =====
+// ===== تطبيق حجم خط ثابت =====
 function applyFixedFontSize() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -689,7 +702,7 @@ function displayPage(pageNumber) {
     const content = document.getElementById('mushafContent');
     content.innerHTML = '';
     
-    // تطبيق حجم الخط الثابت قبل إضافة المحتوى
+    // تطبيق حجم الخط الثابت
     applyFixedFontSize();
     
     if (pageAyahs.length === 0) {
