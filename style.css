@@ -679,17 +679,17 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== الآيات (ضبط من اليمين إلى اليسار) ===== */
+/* ===== الآيات ===== */
 .ayahs-container {
     display: block;
     text-align: justify;
-    text-align-last: justify;
-    -webkit-text-align-last: justify;
-    -moz-text-align-last: justify;
+    text-align-last: right;
+    -webkit-text-align-last: right;
+    -moz-text-align-last: right;
     line-height: inherit;
     font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
-    word-spacing: normal;
-    letter-spacing: normal;
+    word-spacing: 0.35em;
+    letter-spacing: 0.02em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -712,24 +712,18 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== رقم الآية (كبير وواضح) ===== */
+/* ===== رقم الآية (بدون دائرة CSS) ===== */
 .ayah-number {
-    display: inline-block;
-    margin: 0 6px;
+    display: inline;
+    margin: 0 4px;
     color: #f0f0f0;
-    font-size: 0.85em;
+    font-size: inherit;
     font-weight: bold;
-    border: 2px solid #c0c0c0;
-    border-radius: 50%;
-    width: 1.7em;
-    height: 1.7em;
-    line-height: calc(1.7em - 4px);
-    text-align: center;
-    vertical-align: middle;
-    background: #0a0a0a;
-    flex-shrink: 0;
+    vertical-align: baseline;
+    background: transparent;
+    border: none;
+    padding: 0;
     font-family: 'UthmanicHafs', serif;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.6);
 }
 
 /* ===== صفحة الإهداء ===== */
@@ -1142,12 +1136,7 @@ body {
     }
     
     .ayah-number {
-        font-size: 0.8em;
-        width: 1.6em;
-        height: 1.6em;
-        line-height: calc(1.6em - 4px);
-        margin: 0 5px;
-        border-width: 2px;
+        margin: 0 3px;
     }
     
     .page-number {
@@ -1193,13 +1182,6 @@ body {
     .mushaf-content {
         font-size: clamp(16px, 2.2vw, 22px);
         line-height: 2.2;
-    }
-    
-    .ayah-number {
-        font-size: 0.85em;
-        width: 1.7em;
-        height: 1.7em;
-        line-height: calc(1.7em - 4px);
     }
 }
 
