@@ -13,11 +13,18 @@ let isShowingOpening = true;
 let quranData = [];
 let surahList = [];
 let autoScaleActive = false;
-let pagesIndex = []; // مصفوفة تحتوي على حدود كل صفحة
+let pagesIndex = [];
+let db = null;
 
 // ===== إعدادات بناء الصفحات =====
-const CHARS_PER_PAGE = 1000; // عدد الأحرف التقريبي لكل صفحة
-const MIN_SURAH_CHARS = 500;  // الحد الأدنى لأحرف السورة القصيرة
+const CHARS_PER_PAGE = 1000;
+const MIN_SURAH_CHARS = 500;
+
+// ===== إعدادات IndexedDB =====
+const DB_NAME = 'QuranDB';
+const DB_VERSION = 1;
+const STORE_QURAN = 'quranData';
+const STORE_META = 'meta';
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -34,6 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     document.getElementById('retryButton').addEventListener('click', retryLoad);
     
+    // تهيئة قاعدة البيانات
+    try {
+        db = await openDatabase();
+    } catch (error) {
+        console.error('فشل فتح قاعدة البيانات:', error);
+    }
+    
     const success = await loadQuran();
     
     if (!success) {
@@ -41,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // بناء فهرس الصفحات التقديري
     buildPagesIndex();
     
     hideLoadingScreen();
@@ -61,6 +74,77 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 200);
     });
 });
+
+// ===== فتح قاعدة البيانات =====
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        
+        request.onupgradeneeded = (event) => {
+            const database = event.target.result;
+            
+            if (!database.objectStoreNames.contains(STORE_QURAN)) {
+                database.createObjectStore(STORE_QURAN, { keyPath: 'id' });
+            }
+            
+            if (!database.objectStoreNames.contains(STORE_META)) {
+                database.createObjectStore(STORE_META, { keyPath: 'key' });
+            }
+        };
+    });
+}
+
+// ===== حفظ بيانات القرآن في IndexedDB =====
+function saveQuranToDB(data) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('قاعدة البيانات غير متاحة'));
+            return;
+        }
+        
+        const transaction = db.transaction([STORE_QURAN, STORE_META], 'readwrite');
+        const quranStore = transaction.objectStore(STORE_QURAN);
+        const metaStore = transaction.objectStore(STORE_META);
+        
+        // حفظ البيانات الكاملة
+        quranStore.put({ id: 'full', data: data });
+        
+        // حفظ تاريخ آخر تحديث
+        metaStore.put({ key: 'lastUpdate', value: Date.now() });
+        metaStore.put({ key: 'version', value: '1.0.0' });
+        
+        transaction.oncomplete = () => resolve(true);
+        transaction.onerror = () => reject(transaction.error);
+    });
+}
+
+// ===== قراءة بيانات القرآن من IndexedDB =====
+function getQuranFromDB() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            resolve(null);
+            return;
+        }
+        
+        const transaction = db.transaction([STORE_QURAN], 'readonly');
+        const store = transaction.objectStore(STORE_QURAN);
+        const request = store.get('full');
+        
+        request.onsuccess = () => {
+            const result = request.result;
+            if (result && result.data) {
+                resolve(result.data);
+            } else {
+                resolve(null);
+            }
+        };
+        
+        request.onerror = () => reject(request.error);
+    });
+}
 
 // ===== إخفاء شاشة التحميل =====
 function hideLoadingScreen() {
@@ -126,10 +210,9 @@ function getSurahName(surahNumber) {
     return fallback ? fallback.name : '';
 }
 
-// ===== حساب وزن النص (عدد الأحرف بدون تشكيل) =====
+// ===== حساب وزن النص =====
 function getTextWeight(text) {
     if (!text) return 0;
-    // إزالة التشكيل والرموز لحساب الوزن الحقيقي
     const cleaned = text
         .replace(/[\u064B-\u065F\u0670]/g, '')
         .replace(/[\u06D6-\u06ED]/g, '')
@@ -141,7 +224,6 @@ function getTextWeight(text) {
 function buildPagesIndex() {
     pagesIndex = [];
     
-    // إذا لم توجد بيانات
     if (quranData.length === 0) {
         pagesIndex.push({ start: 0, end: 0 });
         totalPages = 1;
@@ -155,23 +237,18 @@ function buildPagesIndex() {
         const ayah = quranData[i];
         const ayahWeight = getTextWeight(ayah.text);
         
-        // التحقق من نهاية السورة
         const isLastAyahOfSurah = (i === quranData.length - 1) || 
                                   (quranData[i + 1].surah !== ayah.surah);
         
-        // إذا تجاوزنا الحد وأصبح بإمكاننا قطع الصفحة
-        // القطع مسموح فقط في نهاية السورة أو عند تجاوز الحد بكثير
         const shouldBreakHere = (currentChars + ayahWeight > CHARS_PER_PAGE) && 
                                  (isLastAyahOfSurah || currentChars > CHARS_PER_PAGE * 1.3);
         
         if (shouldBreakHere && i > pageStart) {
-            // حفظ الصفحة الحالية
             pagesIndex.push({
                 start: pageStart,
-                end: i  // الصفحة تنتهي عند الآية i-1
+                end: i
             });
             
-            // بداية صفحة جديدة
             pageStart = i;
             currentChars = ayahWeight;
         } else {
@@ -179,7 +256,6 @@ function buildPagesIndex() {
         }
     }
     
-    // إضافة الصفحة الأخيرة
     if (pageStart < quranData.length) {
         pagesIndex.push({
             start: pageStart,
@@ -209,41 +285,70 @@ function getPageOfAyah(ayahIndex) {
     return 1;
 }
 
-// ===== تحميل القرآن من quran.json =====
+// ===== معالجة بيانات القرآن =====
+function processQuranData(data) {
+    quranData = [];
+    surahList = [];
+    
+    data.forEach(surah => {
+        surahList.push({
+            number: surah.id,
+            name: surah.name,
+            ayahs: surah.total_verses,
+            type: surah.type === 'meccan' ? 'مكية' : 'مدنية'
+        });
+        
+        surah.verses.forEach(ayah => {
+            quranData.push({
+                surah: surah.id,
+                ayah: ayah.id,
+                text: ayah.text.trim(),
+                normalizedText: normalizeArabic(ayah.text)
+            });
+        });
+    });
+}
+
+// ===== تحميل القرآن (من IndexedDB أولاً، ثم من الشبكة) =====
 async function loadQuran() {
     try {
-        const response = await fetch('quran.json');
+        // محاولة القراءة من IndexedDB أولاً
+        let data = null;
         
-        if (!response.ok) {
-            throw new Error('فشل الاتصال بالخادم: ' + response.status);
+        try {
+            data = await getQuranFromDB();
+            if (data) {
+                console.log('تم تحميل البيانات من IndexedDB');
+            }
+        } catch (error) {
+            console.warn('فشل القراءة من IndexedDB:', error);
         }
         
-        const data = await response.json();
+        // إذا لم توجد البيانات، جلبها من الشبكة
+        if (!data) {
+            console.log('جلب البيانات من الشبكة...');
+            const response = await fetch('quran.json');
+            
+            if (!response.ok) {
+                throw new Error('فشل الاتصال بالخادم: ' + response.status);
+            }
+            
+            data = await response.json();
+            
+            // حفظ في IndexedDB للمرة القادمة
+            try {
+                await saveQuranToDB(data);
+                console.log('تم حفظ البيانات في IndexedDB');
+            } catch (error) {
+                console.warn('فشل الحفظ في IndexedDB:', error);
+            }
+        }
         
         if (!Array.isArray(data) || data.length === 0) {
             throw new Error('بيانات القرآن غير صحيحة');
         }
         
-        quranData = [];
-        surahList = [];
-        
-        data.forEach(surah => {
-            surahList.push({
-                number: surah.id,
-                name: surah.name,
-                ayahs: surah.total_verses,
-                type: surah.type === 'meccan' ? 'مكية' : 'مدنية'
-            });
-            
-            surah.verses.forEach(ayah => {
-                quranData.push({
-                    surah: surah.id,
-                    ayah: ayah.id,
-                    text: ayah.text.trim(),
-                    normalizedText: normalizeArabic(ayah.text)
-                });
-            });
-        });
+        processQuranData(data);
         
         console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
         return true;
@@ -348,6 +453,15 @@ function initializeUI() {
     
     document.getElementById('searchBtn').addEventListener('click', showSearchModal);
     
+    // زر تحديث التطبيق
+    const updateBtn = document.getElementById('updateAppBtn');
+    if (updateBtn) {
+        updateBtn.addEventListener('click', () => {
+            closeMenu();
+            updateApplication();
+        });
+    }
+    
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
             btn.closest('.modal').classList.add('hidden');
@@ -374,6 +488,50 @@ function initializeUI() {
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
     applyFontSize();
+    
+    // إظهار إشعار Offline إذا كان التطبيق جاهزاً
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        console.log('التطبيق جاهز للعمل Offline');
+    }
+}
+
+// ===== تحديث التطبيق =====
+async function updateApplication() {
+    if (!('serviceWorker' in navigator)) {
+        alert('التحديث غير مدعوم في هذا المتصفح');
+        return;
+    }
+    
+    try {
+        // حذف الكاش القديم
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        
+        // حذف بيانات IndexedDB للقرآن لإعادة التحميل
+        try {
+            const transaction = db.transaction([STORE_QURAN], 'readwrite');
+            const store = transaction.objectStore(STORE_QURAN);
+            await new Promise((resolve, reject) => {
+                const request = store.delete('full');
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.warn('فشل حذف البيانات من IndexedDB:', error);
+        }
+        
+        // إلغاء تسجيل Service Worker
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
+        
+        alert('تم تحديث التطبيق. سيُعاد التحميل الآن.');
+        
+        // إعادة التحميل
+        window.location.reload(true);
+    } catch (error) {
+        console.error('فشل التحديث:', error);
+        alert('فشل تحديث التطبيق. يرجى المحاولة مرة أخرى.');
+    }
 }
 
 // ===== العودة لآخر موضع =====
@@ -507,7 +665,7 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== فحص إذا كانت الصفحة الحالية تكمل سورة من الصفحة السابقة =====
+// ===== فحص التكملة =====
 function isContinuationFromPreviousPage(pageNumber) {
     if (pageNumber <= 1) return false;
     
@@ -523,7 +681,7 @@ function isContinuationFromPreviousPage(pageNumber) {
     return currentPageAyahs[0].ayah !== 1;
 }
 
-// ===== فحص إذا كانت الصفحة الحالية ستُكمل في الصفحة التالية =====
+// ===== فحص الاستمرار =====
 function willContinueToNextPage(pageNumber) {
     const currentPageAyahs = getPageAyahs(pageNumber);
     const nextPageAyahs = getPageAyahs(pageNumber + 1);
@@ -591,8 +749,6 @@ function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
     
     document.getElementById('pageNumber').textContent = convertToArabicNumbers(pageNumber);
-    document.getElementById('totalPagesText') && 
-        (document.getElementById('totalPagesText').textContent = convertToArabicNumbers(totalPages));
     
     const pageAyahs = getPageAyahs(pageNumber);
     
