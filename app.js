@@ -17,7 +17,7 @@ let db = null;
 
 // ===== إعدادات بناء الصفحات =====
 const MAX_SURAHS_PER_PAGE = 2;
-const TARGET_WEIGHT = 900;
+const TARGET_WEIGHT = 1000;
 const FIXED_FONT_SIZE_MOBILE = 16;
 const FIXED_FONT_SIZE_DESKTOP = 20;
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
             if (!isShowingOpening) {
-                applyFixedFontSize();
+                displayPage(currentPageNumber);
             }
         }, 200);
     });
@@ -494,8 +494,6 @@ function initializeUI() {
     
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
-    applyFixedFontSize();
-    
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         console.log('التطبيق جاهز للعمل Offline');
     }
@@ -676,17 +674,68 @@ function updatePageNumber(pageNumber) {
     pageNumberElement.textContent = convertToArabicNumbers(pageNumber);
 }
 
-// ===== تطبيق حجم خط ثابت =====
-function applyFixedFontSize() {
+// ===== ضبط حجم الخط ليناسب الصفحة تماماً =====
+function autoFitFontSize() {
     const content = document.getElementById('mushafContent');
-    if (!content) return;
+    const clip = document.querySelector('.mushaf-content-clip');
+    
+    if (!content || !clip) return;
     
     const isMobile = window.innerWidth < 768;
     const baseSize = isMobile ? FIXED_FONT_SIZE_MOBILE : FIXED_FONT_SIZE_DESKTOP;
-    const finalSize = baseSize * currentFontSize;
     
-    content.style.fontSize = finalSize + 'px';
+    // إعادة تعيين الحجم الأساسي
+    let currentSize = baseSize * currentFontSize;
+    content.style.fontSize = currentSize + 'px';
     content.style.lineHeight = '1.65';
+    
+    // الحصول على الارتفاع المتاح
+    const availableHeight = clip.clientHeight;
+    const availableWidth = clip.clientWidth;
+    
+    // إعادة قياس المحتوى
+    let contentHeight = content.scrollHeight;
+    let contentWidth = content.scrollWidth;
+    
+    // إذا كان المحتوى يتجاوز، نصغّر تدريجياً
+    let attempts = 0;
+    const maxAttempts = 50;
+    const minSize = 10;
+    
+    while ((contentHeight > availableHeight || contentWidth > availableWidth) && attempts < maxAttempts && currentSize > minSize) {
+        currentSize -= 0.5;
+        content.style.fontSize = currentSize + 'px';
+        
+        contentHeight = content.scrollHeight;
+        contentWidth = content.scrollWidth;
+        attempts++;
+    }
+    
+    // إذا كان المحتوى أصغر بكثير، نكبر تدريجياً (فقط إذا كنا لا نتجاوز)
+    const targetHeight = availableHeight * 0.98;
+    attempts = 0;
+    const maxSize = baseSize * 2.5;
+    
+    while (contentHeight < targetHeight && currentSize < maxSize && attempts < maxAttempts) {
+        const nextSize = currentSize + 0.5;
+        content.style.fontSize = nextSize + 'px';
+        
+        const newHeight = content.scrollHeight;
+        const newWidth = content.scrollWidth;
+        
+        if (newHeight > availableHeight || newWidth > availableWidth) {
+            // تجاوزنا، نرجع
+            content.style.fontSize = currentSize + 'px';
+            break;
+        }
+        
+        currentSize = nextSize;
+        contentHeight = newHeight;
+        contentWidth = newWidth;
+        attempts++;
+    }
+    
+    console.log(`حجم الخط: ${currentSize}px | الارتفاع: ${contentHeight}/${availableHeight}`);
 }
 
 // ===== عرض الصفحة =====
@@ -699,9 +748,6 @@ function displayPage(pageNumber) {
     
     const content = document.getElementById('mushafContent');
     content.innerHTML = '';
-    
-    // تطبيق حجم الخط الثابت
-    applyFixedFontSize();
     
     if (pageAyahs.length === 0) {
         content.innerHTML = '<div style="text-align:center;color:#888;font-size:1.1rem;">نهاية المصحف</div>';
@@ -749,6 +795,11 @@ function displayPage(pageNumber) {
             spacer.style.height = '20px';
             content.appendChild(spacer);
         }
+    });
+    
+    // ضبط حجم الخط تلقائياً لملء الصفحة
+    requestAnimationFrame(() => {
+        autoFitFontSize();
     });
     
     if (pageAyahs.length > 0) {
@@ -818,7 +869,13 @@ function convertToArabicNumbers(number) {
 
 // ===== تطبيق حجم الخط =====
 function applyFontSize() {
-    applyFixedFontSize();
+    const content = document.getElementById('mushafContent');
+    if (content) {
+        const isMobile = window.innerWidth < 768;
+        const baseSize = isMobile ? FIXED_FONT_SIZE_MOBILE : FIXED_FONT_SIZE_DESKTOP;
+        content.style.fontSize = (baseSize * currentFontSize) + 'px';
+        content.style.lineHeight = '1.65';
+    }
 }
 
 // ===== عرض الفهرس =====
