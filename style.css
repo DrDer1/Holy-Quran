@@ -592,9 +592,10 @@ body {
         0 15px 50px rgba(0,0,0,0.9);
 }
 
+/* ===== منطقة المحتوى مع خطين سفليين ===== */
 .mushaf-content {
     flex: 1;
-    padding: 14px 12px 44px;
+    padding: 14px 12px 30px;
     overflow: hidden;
     text-align: justify;
     font-size: clamp(14px, 3vw, 20px);
@@ -610,23 +611,59 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== رقم الصفحة ===== */
-.page-number {
+/* ===== الخط السفلي مع رقم الصفحة في المنتصف ===== */
+.bottom-lines {
     position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #0a0a0a;
-    color: #f0f0f0;
-    padding: 5px 18px;
-    border: 1px solid #555555;
-    border-radius: 14px;
-    font-size: clamp(15px, 3.5vw, 19px);
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* الخط الأول (العلوي) */
+.bottom-lines::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #666666;
+    transform: translateY(-6px);
+    z-index: 1;
+}
+
+/* الخط الثاني (السفلي) */
+.bottom-lines::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #666666;
+    transform: translateY(6px);
+    z-index: 1;
+}
+
+/* ===== رقم الصفحة (في المنتصف بين الخطين) ===== */
+.page-number {
+    position: relative;
+    z-index: 2;
+    background: #000000;
+    color: #00A8D6;
+    padding: 2px 16px;
+    font-size: clamp(17px, 4vw, 22px);
     font-weight: bold;
-    letter-spacing: 1px;
-    z-index: 5;
+    letter-spacing: 2px;
     font-family: 'UthmanicHafs', serif;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    text-shadow: 0 0 8px rgba(0, 168, 214, 0.6);
+    line-height: 1;
 }
 
 /* ===== عنوان السورة ===== */
@@ -712,7 +749,6 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== رقم الآية (بدون دائرة CSS) ===== */
 .ayah-number {
     display: inline;
     margin: 0 4px;
@@ -1120,9 +1156,21 @@ body {
     }
     
     .mushaf-content {
-        padding: 10px 8px 40px;
+        padding: 10px 8px 28px;
         font-size: clamp(13px, 2.8vw, 17px);
         line-height: 2;
+    }
+    
+    .bottom-lines {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        height: 36px;
+    }
+    
+    .page-number {
+        font-size: clamp(15px, 3.6vw, 19px);
+        padding: 2px 12px;
     }
     
     .surah-header {
@@ -1137,12 +1185,6 @@ body {
     
     .ayah-number {
         margin: 0 3px;
-    }
-    
-    .page-number {
-        font-size: clamp(14px, 3.2vw, 17px);
-        padding: 4px 14px;
-        bottom: 8px;
     }
     
     .opening-frame {
