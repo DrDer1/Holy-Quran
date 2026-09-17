@@ -596,13 +596,13 @@ body {
     flex: 1;
     padding: 14px 12px 44px;
     overflow: hidden;
-    text-align: center;
+    text-align: justify;
     font-size: clamp(14px, 3vw, 20px);
     line-height: 2.1;
     color: #f0f0f0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     position: relative;
     font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', 'Amiri', serif;
     -webkit-font-smoothing: antialiased;
@@ -679,11 +679,14 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== الآيات ===== */
+/* ===== الآيات (ضبط من اليمين إلى اليسار) ===== */
 .ayahs-container {
     display: block;
-    text-align: right;
-    line-height: 2.1;
+    text-align: justify;
+    text-align-last: justify;
+    -webkit-text-align-last: justify;
+    -moz-text-align-last: justify;
+    line-height: inherit;
     font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
     word-spacing: normal;
     letter-spacing: normal;
@@ -692,6 +695,8 @@ body {
     text-rendering: optimizeLegibility;
     font-feature-settings: "kern" 1, "liga" 1;
     direction: rtl;
+    width: 100%;
+    margin-bottom: 4px;
 }
 
 .ayah-text {
@@ -707,24 +712,24 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== رقم الآية ===== */
+/* ===== رقم الآية (كبير وواضح) ===== */
 .ayah-number {
     display: inline-block;
     margin: 0 6px;
     color: #f0f0f0;
-    font-size: 0.75em;
+    font-size: 0.85em;
     font-weight: bold;
-    border: 1.5px solid #999999;
+    border: 2px solid #c0c0c0;
     border-radius: 50%;
-    width: 1.5em;
-    height: 1.5em;
-    line-height: calc(1.5em - 3px);
+    width: 1.7em;
+    height: 1.7em;
+    line-height: calc(1.7em - 4px);
     text-align: center;
     vertical-align: middle;
     background: #0a0a0a;
     flex-shrink: 0;
     font-family: 'UthmanicHafs', serif;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 5px rgba(0,0,0,0.6);
 }
 
 /* ===== صفحة الإهداء ===== */
@@ -1137,12 +1142,12 @@ body {
     }
     
     .ayah-number {
-        font-size: 0.7em;
-        width: 1.4em;
-        height: 1.4em;
-        line-height: calc(1.4em - 3px);
+        font-size: 0.8em;
+        width: 1.6em;
+        height: 1.6em;
+        line-height: calc(1.6em - 4px);
         margin: 0 5px;
-        border-width: 1.5px;
+        border-width: 2px;
     }
     
     .page-number {
@@ -1191,10 +1196,10 @@ body {
     }
     
     .ayah-number {
-        font-size: 0.75em;
-        width: 1.5em;
-        height: 1.5em;
-        line-height: calc(1.5em - 3px);
+        font-size: 0.85em;
+        width: 1.7em;
+        height: 1.7em;
+        line-height: calc(1.7em - 4px);
     }
 }
 
