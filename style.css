@@ -681,8 +681,8 @@ body {
 
 /* ===== الآيات ===== */
 .ayahs-container {
-    display: inline;
-    text-align: justify;
+    display: block;
+    text-align: right;
     line-height: 2.1;
     font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
     word-spacing: normal;
@@ -691,6 +691,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-feature-settings: "kern" 1, "liga" 1;
+    direction: rtl;
 }
 
 .ayah-text {
