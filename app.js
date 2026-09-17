@@ -650,7 +650,16 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== ضبط تلقائي ذكي: يملأ الصفحة تماماً (تكبير قوي) =====
+// ===== دالة تحديث رقم الصفحة (لا تنشئ الزخرفة) =====
+function updatePageNumber(pageNumber) {
+    const pageNumberElement = document.getElementById('pageNumber');
+    
+    if (!pageNumberElement) return;
+    
+    pageNumberElement.textContent = convertToArabicNumbers(pageNumber);
+}
+
+// ===== ضبط تلقائي ذكي: يملأ الصفحة تماماً =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -658,7 +667,6 @@ function autoFitContent() {
     const baseSize = window.innerWidth < 480 ? 14 : 18;
     const baseFontSize = baseSize * currentFontSize;
     
-    // إعادة تعيين الحجم
     content.style.fontSize = baseFontSize + 'px';
     content.style.lineHeight = '2.1';
     
@@ -686,10 +694,10 @@ function autoFitContent() {
             
             autoScaleActive = scale < 1;
         }
-        // إذا كان المحتوى أقصر → تكبير قوي حتى يمتلئ
+        // إذا كان المحتوى أقصر → تكبير
         else {
             let scale = 1;
-            const maxScale = 5.0; // رُفع الحد الأقصى للتكبير
+            const maxScale = 5.0;
             const step = 0.02;
             
             while (scale < maxScale) {
@@ -715,7 +723,8 @@ function autoFitContent() {
 function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
     
-    document.getElementById('pageNumber').textContent = convertToArabicNumbers(pageNumber);
+    // تحديث رقم الصفحة (فقط الرقم، لا الزخرفة)
+    updatePageNumber(pageNumber);
     
     const pageAyahs = getPageAyahs(pageNumber);
     
