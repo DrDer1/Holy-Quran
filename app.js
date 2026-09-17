@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     document.getElementById('retryButton').addEventListener('click', retryLoad);
     
-    // تهيئة قاعدة البيانات
     try {
         db = await openDatabase();
     } catch (error) {
@@ -109,10 +108,8 @@ function saveQuranToDB(data) {
         const quranStore = transaction.objectStore(STORE_QURAN);
         const metaStore = transaction.objectStore(STORE_META);
         
-        // حفظ البيانات الكاملة
         quranStore.put({ id: 'full', data: data });
         
-        // حفظ تاريخ آخر تحديث
         metaStore.put({ key: 'lastUpdate', value: Date.now() });
         metaStore.put({ key: 'version', value: '1.0.0' });
         
@@ -309,10 +306,9 @@ function processQuranData(data) {
     });
 }
 
-// ===== تحميل القرآن (من IndexedDB أولاً، ثم من الشبكة) =====
+// ===== تحميل القرآن =====
 async function loadQuran() {
     try {
-        // محاولة القراءة من IndexedDB أولاً
         let data = null;
         
         try {
@@ -324,7 +320,6 @@ async function loadQuran() {
             console.warn('فشل القراءة من IndexedDB:', error);
         }
         
-        // إذا لم توجد البيانات، جلبها من الشبكة
         if (!data) {
             console.log('جلب البيانات من الشبكة...');
             const response = await fetch('quran.json');
@@ -335,7 +330,6 @@ async function loadQuran() {
             
             data = await response.json();
             
-            // حفظ في IndexedDB للمرة القادمة
             try {
                 await saveQuranToDB(data);
                 console.log('تم حفظ البيانات في IndexedDB');
@@ -453,7 +447,6 @@ function initializeUI() {
     
     document.getElementById('searchBtn').addEventListener('click', showSearchModal);
     
-    // زر تحديث التطبيق
     const updateBtn = document.getElementById('updateAppBtn');
     if (updateBtn) {
         updateBtn.addEventListener('click', () => {
@@ -489,7 +482,6 @@ function initializeUI() {
     
     applyFontSize();
     
-    // إظهار إشعار Offline إذا كان التطبيق جاهزاً
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         console.log('التطبيق جاهز للعمل Offline');
     }
@@ -503,11 +495,9 @@ async function updateApplication() {
     }
     
     try {
-        // حذف الكاش القديم
         const cacheNames = await caches.keys();
         await Promise.all(cacheNames.map(name => caches.delete(name)));
         
-        // حذف بيانات IndexedDB للقرآن لإعادة التحميل
         try {
             const transaction = db.transaction([STORE_QURAN], 'readwrite');
             const store = transaction.objectStore(STORE_QURAN);
@@ -520,13 +510,11 @@ async function updateApplication() {
             console.warn('فشل حذف البيانات من IndexedDB:', error);
         }
         
-        // إلغاء تسجيل Service Worker
         const registrations = await navigator.serviceWorker.getRegistrations();
         await Promise.all(registrations.map(r => r.unregister()));
         
         alert('تم تحديث التطبيق. سيُعاد التحميل الآن.');
         
-        // إعادة التحميل
         window.location.reload(true);
     } catch (error) {
         console.error('فشل التحديث:', error);
@@ -694,7 +682,7 @@ function willContinueToNextPage(pageNumber) {
     return lastAyah.surah === nextFirstAyah.surah;
 }
 
-// ===== ضبط تلقائي لحجم الخط =====
+// ===== ضبط تلقائي لحجم الخط (بدون مؤشر) =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -705,11 +693,6 @@ function autoFitContent() {
     
     content.style.fontSize = baseFontSize + 'px';
     content.style.lineHeight = baseLineHeight;
-    
-    const existingIndicator = content.querySelector('.auto-scale-indicator');
-    if (existingIndicator) {
-        existingIndicator.remove();
-    }
     
     autoScaleActive = false;
     
@@ -733,13 +716,6 @@ function autoFitContent() {
             }
             
             autoScaleActive = scale < 1;
-            
-            if (autoScaleActive) {
-                const indicator = document.createElement('div');
-                indicator.className = 'auto-scale-indicator';
-                indicator.textContent = `تم تصغير الخط تلقائياً ×${scale.toFixed(2)}`;
-                content.insertBefore(indicator, content.firstChild);
-            }
         }
     });
 }
