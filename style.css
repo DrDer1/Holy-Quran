@@ -707,7 +707,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== رقم الآية (مكبّر) ===== */
+/* ===== رقم الآية ===== */
 .ayah-number {
     display: inline-block;
     margin: 0 6px;
