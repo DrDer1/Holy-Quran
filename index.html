@@ -13,8 +13,34 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- شاشة التحميل -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-frame">
+            <div class="loading-ornament-top">❁</div>
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">جارٍ تحميل المصحف الكريم...</div>
+                <div class="loading-subtext">يرجى الانتظار</div>
+            </div>
+            <div class="loading-ornament-bottom">❁</div>
+        </div>
+    </div>
+
+    <!-- شاشة الخطأ -->
+    <div id="errorScreen" class="error-screen hidden">
+        <div class="error-frame">
+            <div class="error-ornament-top">⚠</div>
+            <div class="error-content">
+                <div class="error-title">تعذّر تحميل المصحف</div>
+                <div class="error-message" id="errorMessage">حدث خطأ أثناء تحميل بيانات القرآن الكريم</div>
+                <button id="retryButton" class="retry-btn">إعادة المحاولة</button>
+            </div>
+            <div class="error-ornament-bottom">⚠</div>
+        </div>
+    </div>
+
     <!-- الحاوية الرئيسية -->
-    <div id="appContainer" class="app-container">
+    <div id="appContainer" class="app-container hidden">
         
         <!-- الشريط العلوي -->
         <header id="topBar" class="top-bar hidden">
