@@ -595,7 +595,7 @@ body {
 /* ===== منطقة المحتوى ===== */
 .mushaf-content {
     flex: 1;
-    padding: 14px 12px 40px;
+    padding: 14px 12px 34px;
     overflow: hidden;
     text-align: justify;
     font-size: clamp(14px, 3vw, 20px);
@@ -611,59 +611,22 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== الخطين السفليين ===== */
-.bottom-lines {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 4;
-}
-
-/* الخط الأول (العلوي) */
-.bottom-lines::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #888888;
-    transform: translateY(-4px);
-    z-index: 1;
-}
-
-/* الخط الثاني (السفلي) */
-.bottom-lines::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #888888;
-    transform: translateY(4px);
-    z-index: 1;
-}
-
-/* ===== رقم الصفحة (صغير، يقطع الخطين) ===== */
+/* ===== رقم الصفحة (يقطع خط الإطار السفلي) ===== */
 .page-number {
-    position: relative;
-    z-index: 3;
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
+    min-width: 36px;
     height: 22px;
-    padding: 0 8px;
+    padding: 0 10px;
     background: #000000;
     color: #00A8D6;
-    font-size: clamp(13px, 2.8vw, 16px);
+    font-size: clamp(13px, 2.9vw, 16px);
     font-weight: bold;
     letter-spacing: 0.5px;
     font-family: 'UthmanicHafs', serif;
@@ -671,6 +634,7 @@ body {
     text-shadow: 0 0 5px rgba(0, 168, 214, 0.5);
     border: 1px solid #00A8D6;
     border-radius: 3px;
+    box-shadow: 0 0 6px rgba(0, 168, 214, 0.25);
 }
 
 /* ===== عنوان السورة ===== */
@@ -756,7 +720,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== رقم الآية (من النص العثماني الأصلي) ===== */
+/* ===== رقم الآية ===== */
 .ayah-number {
     display: inline;
     margin: 0 4px;
@@ -1164,23 +1128,17 @@ body {
     }
     
     .mushaf-content {
-        padding: 10px 8px 38px;
+        padding: 10px 8px 32px;
         font-size: clamp(13px, 2.8vw, 17px);
         line-height: 2;
     }
     
-    .bottom-lines {
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        height: 28px;
-    }
-    
     .page-number {
-        min-width: 28px;
+        bottom: 6px;
+        min-width: 30px;
         height: 20px;
-        padding: 0 6px;
-        font-size: clamp(12px, 2.6vw, 14px);
+        padding: 0 8px;
+        font-size: clamp(12px, 2.7vw, 14px);
     }
     
     .surah-header {
