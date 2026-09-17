@@ -214,7 +214,7 @@ function getWordCount(text) {
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات (بحد أقصى سورتين في الصفحة) =====
+// ===== بناء فهرس الصفحات =====
 function buildPagesIndex() {
     pagesIndex = [];
     
@@ -224,7 +224,7 @@ function buildPagesIndex() {
         return;
     }
     
-    // ===== سورة الفاتحة في صفحة منفصلة =====
+    // سورة الفاتحة في صفحة منفصلة
     const fatihaEndIndex = quranData.findIndex(a => a.surah === 2);
     const fatihaEnd = fatihaEndIndex >= 0 ? fatihaEndIndex : 7;
     
@@ -234,7 +234,7 @@ function buildPagesIndex() {
         isFatihaPage: true
     });
     
-    // ===== باقي الصفحات =====
+    // باقي الصفحات
     const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE;
     
     let pageStart = fatihaEnd;
@@ -246,22 +246,15 @@ function buildPagesIndex() {
         const ayah = quranData[i];
         const ayahWords = getWordCount(ayah.text);
         
-        // هل هذه بداية سورة جديدة؟
         const isNewSurah = ayah.surah !== lastSurah;
         
-        // هل السورة الجديدة ستجعل عدد السور يتجاوز الحد؟
         const wouldExceedSurahLimit = isNewSurah && (currentSurahCount + 1) > MAX_SURAHS_PER_PAGE;
         
-        // التحقق من نهاية السورة الحالية
         const isLastAyahOfSurah = (i === quranData.length - 1) || 
                                   (quranData[i + 1].surah !== ayah.surah);
         
-        // تجاوز الحد الأقصى للكلمات
         const wouldExceedWords = (currentWords + ayahWords) > maxWordsPerPage;
         
-        // شروط القطع:
-        // 1. تجاوز الحد الأقصى للسور → اقطع قبل بداية السورة الجديدة
-        // 2. تجاوز عدد الكلمات + وصلنا لنهاية سورة
         const shouldBreakForSurahLimit = wouldExceedSurahLimit;
         const shouldBreakForWords = wouldExceedWords && 
                                      (isLastAyahOfSurah || currentWords > maxWordsPerPage * 0.85);
@@ -277,7 +270,6 @@ function buildPagesIndex() {
             currentSurahCount = 1;
             lastSurah = ayah.surah;
         } else {
-            // إضافة آية للصفحة الحالية
             if (isNewSurah) {
                 currentSurahCount++;
                 lastSurah = ayah.surah;
@@ -286,7 +278,6 @@ function buildPagesIndex() {
         }
     }
     
-    // إضافة الصفحة الأخيرة
     if (pageStart < quranData.length) {
         pagesIndex.push({
             start: pageStart,
@@ -295,7 +286,7 @@ function buildPagesIndex() {
     }
     
     totalPages = pagesIndex.length;
-    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة (بحد أقصى', MAX_SURAHS_PER_PAGE, 'سور/صفحة)');
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -470,18 +461,6 @@ function initializeUI() {
     document.getElementById('saveBookmarkBtn').addEventListener('click', () => {
         saveBookmark();
         closeMenu();
-    });
-    
-    document.getElementById('fontPlus').addEventListener('click', () => {
-        currentFontSize = Math.min(currentFontSize + 0.1, 2.0);
-        saveFontSize();
-        displayPage(currentPageNumber);
-    });
-    
-    document.getElementById('fontMinus').addEventListener('click', () => {
-        currentFontSize = Math.max(currentFontSize - 0.1, 0.6);
-        saveFontSize();
-        displayPage(currentPageNumber);
     });
     
     document.getElementById('searchBtn').addEventListener('click', showSearchModal);
@@ -825,7 +804,7 @@ function displayPage(pageNumber) {
     }
 }
 
-// ===== إضافة آية إلى حاوية (الرقم في آخر الآية) =====
+// ===== إضافة آية إلى حاوية =====
 function appendAyahToContainer(container, ayah) {
     const ayahText = document.createElement('span');
     ayahText.className = 'ayah-text';
