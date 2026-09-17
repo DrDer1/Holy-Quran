@@ -653,7 +653,7 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== ضبط تلقائي لحجم الخط =====
+// ===== ضبط تلقائي لحجم الخط (تكبير وتصغير لملء الصفحة) =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -662,15 +662,17 @@ function autoFitContent() {
     const baseFontSize = baseSize * currentFontSize;
     const baseLineHeight = 2.1;
     
+    // إعادة تعيين الحجم
     content.style.fontSize = baseFontSize + 'px';
     content.style.lineHeight = baseLineHeight;
     
     autoScaleActive = false;
     
     requestAnimationFrame(() => {
-        const contentHeight = content.scrollHeight;
-        const availableHeight = content.clientHeight;
+        let contentHeight = content.scrollHeight;
+        let availableHeight = content.clientHeight;
         
+        // الحالة 1: المحتوى أطول من المتاح → تصغير
         if (contentHeight > availableHeight) {
             let scale = 1;
             const minScale = 0.6;
@@ -687,6 +689,28 @@ function autoFitContent() {
             }
             
             autoScaleActive = scale < 1;
+        }
+        // الحالة 2: المحتوى أقصر من المتاح → تكبير لملء الصفحة
+        else if (contentHeight < availableHeight * 0.92) {
+            let scale = 1;
+            const maxScale = 1.6; // الحد الأقصى للتكبير التلقائي
+            const step = 0.02;
+            
+            while (scale < maxScale) {
+                const nextScale = scale + step;
+                content.style.fontSize = (baseFontSize * nextScale) + 'px';
+                
+                const newHeight = content.scrollHeight;
+                if (newHeight > availableHeight) {
+                    // تجاوزنا الحد، نرجع للخطوة السابقة
+                    content.style.fontSize = (baseFontSize * scale) + 'px';
+                    break;
+                }
+                
+                scale = nextScale;
+            }
+            
+            autoScaleActive = scale > 1;
         }
     });
 }
@@ -730,7 +754,6 @@ function displayPage(pageNumber) {
         
         const isNewSurah = (previousPageLastSurah === null || surahNum !== previousPageLastSurah);
         
-        // عرض اسم السورة فقط إذا كانت سورة جديدة (لم تكن في الصفحة السابقة)
         if (isNewSurah) {
             displaySurahHeader(content, surahNum);
         }
