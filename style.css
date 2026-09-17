@@ -694,6 +694,27 @@ body {
     opacity: 0.75;
 }
 
+/* ===== مؤشر الضبط التلقائي لحجم الخط ===== */
+.auto-scale-indicator {
+    display: block;
+    text-align: center;
+    color: #c0c0c0;
+    font-size: 11px;
+    padding: 3px 10px;
+    margin: 0 0 8px 0;
+    border: 1px solid #333333;
+    border-radius: 10px;
+    background: #0a0a0a;
+    letter-spacing: 0.5px;
+    font-family: 'UthmanicHafs', serif;
+    opacity: 0.7;
+    flex-shrink: 0;
+    align-self: center;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* ===== الآيات ===== */
 .ayahs-container {
     display: inline;
@@ -1156,6 +1177,12 @@ body {
     .follow-indicator {
         font-size: clamp(11px, 2.5vw, 13px);
         padding: 6px 10px;
+    }
+    
+    .auto-scale-indicator {
+        font-size: 10px;
+        padding: 2px 8px;
+        max-width: 160px;
     }
     
     .ayah-number {
