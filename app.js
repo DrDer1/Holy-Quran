@@ -33,6 +33,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSwipeGestures();
 });
 
+// ===== دالة تطبيع النص العربي =====
+function normalizeArabic(text) {
+    if (!text) return '';
+    
+    return text
+        // إزالة التشكيل (الفتحة، الضمة، الكسرة، السكون، الشدة، التنوين)
+        .replace(/[\u064B-\u065F\u0670]/g, '')
+        // إزالة علامات الوقف والرموز القرآنية
+        .replace(/[\u06D6-\u06ED\u08F0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g, '')
+        // توحيد الألف (أ، إ، آ، ٱ → ا)
+        .replace(/[أإآٱ]/g, 'ا')
+        // توحيد الياء (ى → ي)
+        .replace(/ى/g, 'ي')
+        // توحيد التاء المربوطة (ة → ه)
+        .replace(/ة/g, 'ه')
+        // توحيد الهمزة على السطر
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        // إزالة المسافات الزائدة
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 // ===== تحميل القرآن من quran.json =====
 async function loadQuran() {
     try {
@@ -54,7 +77,8 @@ async function loadQuran() {
                 quranData.push({
                     surah: surah.id,
                     ayah: ayah.id,
-                    text: ayah.text.trim()
+                    text: ayah.text.trim(),
+                    normalizedText: normalizeArabic(ayah.text)
                 });
             });
         });
@@ -268,7 +292,6 @@ function handleSwipe() {
         return;
     }
     
-    // في الصفحة الافتتاحية: أي سحب يفتح المصحف من الصفحة 1
     if (isShowingOpening) {
         showMushafPage();
         displayPage(1);
@@ -276,9 +299,6 @@ function handleSwipe() {
         return;
     }
     
-    // داخل المصحف:
-    // سحب لليسار (swipeDistance < 0) = الصفحة التالية
-    // سحب لليمين (swipeDistance > 0) = الصفحة السابقة
     if (swipeDistance < 0) {
         goToNextPage();
     } else {
@@ -549,7 +569,7 @@ function hideDedicationPage() {
     document.getElementById('dedicationPage').classList.add('hidden');
 }
 
-// ===== تنفيذ البحث =====
+// ===== تنفيذ البحث (محدث بتطبيع النص) =====
 function performSearch() {
     const searchType = document.getElementById('searchType').value;
     const searchText = document.getElementById('searchInput').value.trim();
@@ -566,8 +586,11 @@ function performSearch() {
     
     switch (searchType) {
         case 'text':
+            // تطبيع نص البحث قبل المقارنة
+            const normalizedSearch = normalizeArabic(searchText);
+            
             results = quranData.filter(ayah => 
-                ayah.text.includes(searchText)
+                ayah.normalizedText.includes(normalizedSearch)
             ).slice(0, 50);
             break;
             
