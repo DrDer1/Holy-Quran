@@ -32,6 +32,7 @@
     --border-light: #666666;
     --border-lighter: #999999;
     --error-red: #d9534f;
+    --update-cyan: #26b3a6;
 }
 
 html, body {
@@ -461,6 +462,21 @@ body {
 
 .bookmark-save-btn {
     border-color: #00A8D6;
+}
+
+/* ===== زر تحديث التطبيق ===== */
+.update-app-btn {
+    border-color: #26b3a6;
+    color: #f0f0f0;
+}
+
+.update-app-btn:hover {
+    background: rgba(38, 179, 166, 0.1);
+    border-color: #4fd4c6;
+}
+
+.update-app-btn .side-menu-icon {
+    color: #26b3a6;
 }
 
 /* ===== منطقة المصحف ===== */
