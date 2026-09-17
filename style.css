@@ -617,7 +617,7 @@ body {
     bottom: 12px;
     left: 12px;
     right: 12px;
-    height: 36px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -633,8 +633,8 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(to left, transparent, #888888 20%, #888888 80%, transparent);
-    transform: translateY(-6px);
+    background: #888888;
+    transform: translateY(-4px);
     z-index: 1;
 }
 
@@ -646,67 +646,31 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(to left, transparent, #888888 20%, #888888 80%, transparent);
-    transform: translateY(6px);
+    background: #888888;
+    transform: translateY(4px);
     z-index: 1;
 }
 
-/* ===== رقم الصفحة داخل أيقونة مزخرفة (نقطة معينية) ===== */
+/* ===== رقم الصفحة (صغير، يقطع الخطين) ===== */
 .page-number {
     position: relative;
     z-index: 3;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
-    height: 26px;
-    padding: 0 12px;
+    min-width: 32px;
+    height: 22px;
+    padding: 0 8px;
     background: #000000;
     color: #00A8D6;
-    font-size: clamp(15px, 3.4vw, 18px);
+    font-size: clamp(13px, 2.8vw, 16px);
     font-weight: bold;
-    letter-spacing: 1.5px;
+    letter-spacing: 0.5px;
     font-family: 'UthmanicHafs', serif;
     line-height: 1;
-    text-shadow: 0 0 6px rgba(0, 168, 214, 0.5);
+    text-shadow: 0 0 5px rgba(0, 168, 214, 0.5);
     border: 1px solid #00A8D6;
-    border-radius: 4px;
-    box-shadow: 
-        0 0 0 2px #000000,
-        0 0 0 3px #00A8D6,
-        0 0 8px rgba(0, 168, 214, 0.35);
-}
-
-/* زخرفة معينية يمنى (◆) */
-.page-number::before {
-    content: '◆';
-    position: absolute;
-    right: -14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #00A8D6;
-    font-size: 12px;
-    line-height: 1;
-    text-shadow: 0 0 5px rgba(0, 168, 214, 0.6);
-    background: #000000;
-    padding: 0 2px;
-    z-index: 4;
-}
-
-/* زخرفة معينية يسرى (◆) */
-.page-number::after {
-    content: '◆';
-    position: absolute;
-    left: -14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #00A8D6;
-    font-size: 12px;
-    line-height: 1;
-    text-shadow: 0 0 5px rgba(0, 168, 214, 0.6);
-    background: #000000;
-    padding: 0 2px;
-    z-index: 4;
+    border-radius: 3px;
 }
 
 /* ===== عنوان السورة ===== */
@@ -1209,25 +1173,14 @@ body {
         bottom: 10px;
         left: 10px;
         right: 10px;
-        height: 32px;
+        height: 28px;
     }
     
     .page-number {
-        min-width: 38px;
-        height: 22px;
-        padding: 0 10px;
-        font-size: clamp(13px, 3.2vw, 16px);
-        letter-spacing: 1px;
-    }
-    
-    .page-number::before {
-        right: -11px;
-        font-size: 10px;
-    }
-    
-    .page-number::after {
-        left: -11px;
-        font-size: 10px;
+        min-width: 28px;
+        height: 20px;
+        padding: 0 6px;
+        font-size: clamp(12px, 2.6vw, 14px);
     }
     
     .surah-header {
