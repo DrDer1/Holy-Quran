@@ -96,16 +96,6 @@
                 
                 <div class="side-menu-divider"></div>
                 
-                <div class="font-controls">
-                    <span class="font-label">حجم الخط</span>
-                    <div class="font-buttons">
-                        <button id="fontPlus" class="font-btn">أ+</button>
-                        <button id="fontMinus" class="font-btn">أ-</button>
-                    </div>
-                </div>
-                
-                <div class="side-menu-divider"></div>
-                
                 <button id="saveBookmarkBtn" class="side-menu-item bookmark-save-btn">
                     <span class="side-menu-icon">💾</span>
                     <span>حفظ الموضع الحالي</span>
@@ -121,22 +111,14 @@
         <!-- منطقة عرض المصحف -->
         <main id="quranArea" class="quran-area">
             <div id="quranPage" class="quran-page">
-                <!-- الصفحة الافتتاحية (بنفس تنسيق صفحات المصحف) -->
+                <!-- الصفحة الافتتاحية -->
                 <div id="openingPage" class="opening-page">
                     <div class="mushaf-frame">
-                        <!-- إطار الصفحة الزخرفي (SVG) -->
                         <svg class="quran-page-border" viewBox="0 0 400 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <!-- الإطار الخارجي الرئيسي (ذهبي) -->
                             <rect x="4" y="4" width="392" height="692" fill="none" stroke="#d4af37" stroke-width="1.5" rx="2" ry="2"/>
-                            
-                            <!-- الإطار الداخلي الثاني (برونزي) -->
                             <rect x="12" y="12" width="376" height="676" fill="none" stroke="#b8860b" stroke-width="0.9" rx="1" ry="1"/>
-
-                            <!-- الحد السفلي الداخلي مقطوع في المنتصف -->
                             <path d="M 12 688 L 155 688" fill="none" stroke="#b8860b" stroke-width="0.9"/>
                             <path d="M 245 688 L 388 688" fill="none" stroke="#b8860b" stroke-width="0.9"/>
-
-                            <!-- زخرفتان صغيرتان على جانبي الفتحة -->
                             <g fill="none" stroke="#d4af37" stroke-width="0.9" opacity="0.9">
                                 <path d="M 155 688 Q 160 684 165 688 Q 170 692 175 688"/>
                                 <circle cx="165" cy="688" r="1.1" fill="#d4af37" stroke="none"/>
@@ -145,7 +127,6 @@
                             </g>
                         </svg>
 
-                        <!-- محتوى الصفحة الافتتاحية -->
                         <div class="mushaf-content opening-content-inner">
                             <h1 class="opening-title">الْقُرْآنُ الْكَرِيمُ</h1>
                         </div>
@@ -155,19 +136,11 @@
                 <!-- صفحة المصحف -->
                 <div id="mushafPage" class="mushaf-page hidden">
                     <div class="mushaf-frame">
-                        <!-- إطار الصفحة الزخرفي (SVG) -->
                         <svg class="quran-page-border" viewBox="0 0 400 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <!-- الإطار الخارجي الرئيسي (ذهبي) -->
                             <rect x="4" y="4" width="392" height="692" fill="none" stroke="#d4af37" stroke-width="1.5" rx="2" ry="2"/>
-                            
-                            <!-- الإطار الداخلي الثاني (برونزي) -->
                             <rect x="12" y="12" width="376" height="676" fill="none" stroke="#b8860b" stroke-width="0.9" rx="1" ry="1"/>
-
-                            <!-- الحد السفلي الداخلي مقطوع في المنتصف -->
                             <path d="M 12 688 L 155 688" fill="none" stroke="#b8860b" stroke-width="0.9"/>
                             <path d="M 245 688 L 388 688" fill="none" stroke="#b8860b" stroke-width="0.9"/>
-
-                            <!-- زخرفتان صغيرتان على جانبي الفتحة -->
                             <g fill="none" stroke="#d4af37" stroke-width="0.9" opacity="0.9">
                                 <path d="M 155 688 Q 160 684 165 688 Q 170 692 175 688"/>
                                 <circle cx="165" cy="688" r="1.1" fill="#d4af37" stroke="none"/>
@@ -176,15 +149,12 @@
                             </g>
                         </svg>
 
-                        <!-- محتوى الصفحة (الآيات) -->
                         <div class="mushaf-content" id="mushafContent">
                             <!-- محتوى الصفحة -->
                         </div>
 
-                        <!-- زخرفة رقم الصفحة (مدالية إسلامية) -->
                         <div class="page-number-ornament">
                             <svg class="page-number-svg" viewBox="0 0 120 60" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <!-- المدالية الخارجية -->
                                 <path d="M 60 4 
                                          Q 20 4 8 20 
                                          Q 4 30 8 40 
@@ -195,8 +165,6 @@
                                       fill="#000000" 
                                       stroke="#d4af37" 
                                       stroke-width="1.5"/>
-                                
-                                <!-- الإطار الداخلي الرقيق -->
                                 <path d="M 60 10 
                                          Q 26 10 16 22 
                                          Q 12 30 16 38 
@@ -208,16 +176,12 @@
                                       stroke="#b8860b" 
                                       stroke-width="0.7" 
                                       opacity="0.8"/>
-                                
-                                <!-- زخارف جانبية -->
                                 <g fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.9">
                                     <path d="M 8 30 Q 2 26 4 30 Q 6 34 8 30"/>
                                     <path d="M 112 30 Q 118 26 116 30 Q 114 34 112 30"/>
                                 </g>
-
                                 <circle cx="60" cy="2" r="1.5" fill="#d4af37"/>
                                 <circle cx="60" cy="58" r="1.5" fill="#d4af37"/>
-                                
                                 <g fill="#b8860b" opacity="0.85">
                                     <circle cx="20" cy="30" r="1.2"/>
                                     <circle cx="100" cy="30" r="1.2"/>
