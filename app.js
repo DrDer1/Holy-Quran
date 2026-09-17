@@ -12,7 +12,6 @@ let isFirstLaunch = false;
 let isShowingOpening = true;
 let quranData = [];
 let surahList = [];
-let lastShownSurahHeader = null;
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -357,6 +356,8 @@ function handleSwipe() {
         return;
     }
     
+    // سحب لليسار = الصفحة التالية (منطق عربي صحيح)
+    // سحب لليمين = الصفحة السابقة
     if (swipeDistance < 0) {
         goToNextPage();
     } else {
@@ -428,7 +429,6 @@ function displayPage(pageNumber) {
     currentJuzNumber = getJuzNumber(firstAyah.surah, firstAyah.ayah);
     updateTopBar();
     
-    // تحديد آخر سورة تم عرض رأسها في الصفحة السابقة
     const previousPageLastSurah = getLastSurahOfPage(pageNumber - 1);
     
     const surahGroups = {};
@@ -445,9 +445,6 @@ function displayPage(pageNumber) {
         const surahNum = parseInt(surahNumber);
         const surahAyahs = surahGroups[surahNumber];
         
-        // عرض رأس السورة فقط في الحالات التالية:
-        // 1. السورة مختلفة عن آخر سورة في الصفحة السابقة
-        // 2. أو أول آية في السورة هي الآية رقم 1 (بداية السورة الفعلية)
         const isNewSurah = (previousPageLastSurah === null || surahNum !== previousPageLastSurah);
         const isFirstAyahOfSurah = surahAyahs[0].ayah === 1;
         
@@ -753,8 +750,9 @@ function saveFontSize() {
     localStorage.setItem('quranFontSize', currentFontSize.toString());
 }
 
-// ===== اختصارات لوحة المفاتيح =====
+// ===== اختصارات لوحة المفاتيح (محدثة) =====
 function handleKeyboardShortcuts(event) {
+    // السهم الأيسر = الصفحة التالية (في RTL يتقدم للأمام)
     if (event.key === 'ArrowLeft') {
         event.preventDefault();
         if (!isShowingOpening) {
@@ -762,6 +760,7 @@ function handleKeyboardShortcuts(event) {
         }
     }
     
+    // السهم الأيمن = الصفحة السابقة (في RTL يعود للخلف)
     if (event.key === 'ArrowRight') {
         event.preventDefault();
         if (isShowingOpening) {
