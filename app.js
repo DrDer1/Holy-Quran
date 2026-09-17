@@ -20,7 +20,6 @@ let db = null;
 const WORDS_PER_LINE = 10;
 const MAX_LINES_PER_PAGE = 15;
 const TARGET_TOTAL_PAGES = 604;
-const MIN_SURAH_CHARS = 500;
 
 // ===== إعدادات IndexedDB =====
 const DB_NAME = 'QuranDB';
@@ -214,7 +213,7 @@ function getWordCount(text) {
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات =====
+// ===== بناء فهرس الصفحات (سورة الفاتحة في صفحة منفصلة) =====
 function buildPagesIndex() {
     pagesIndex = [];
     
@@ -224,12 +223,24 @@ function buildPagesIndex() {
         return;
     }
     
+    // ===== سورة الفاتحة في صفحة منفصلة =====
+    // عدد آيات الفاتحة = 7 (كلها آيات 1..7 من السورة 1)
+    const fatihaEndIndex = quranData.findIndex(a => a.surah === 2);
+    const fatihaEnd = fatihaEndIndex >= 0 ? fatihaEndIndex : 7;
+    
+    pagesIndex.push({
+        start: 0,
+        end: fatihaEnd,
+        isFatihaPage: true
+    });
+    
+    // ===== باقي الصفحات (بناء حسب الكلمات) =====
     const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE;
     
-    let pageStart = 0;
+    let pageStart = fatihaEnd;
     let currentWords = 0;
     
-    for (let i = 0; i < quranData.length; i++) {
+    for (let i = fatihaEnd; i < quranData.length; i++) {
         const ayah = quranData[i];
         const ayahWords = getWordCount(ayah.text);
         
@@ -261,7 +272,7 @@ function buildPagesIndex() {
     }
     
     totalPages = pagesIndex.length;
-    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة (صفحة الفاتحة منفصلة)');
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -270,6 +281,12 @@ function getPageAyahs(pageNumber) {
     
     const pageInfo = pagesIndex[pageNumber - 1];
     return quranData.slice(pageInfo.start, pageInfo.end);
+}
+
+// ===== التحقق إذا كانت الصفحة هي صفحة الفاتحة =====
+function isFatihaPage(pageNumber) {
+    if (pageNumber < 1 || pageNumber > pagesIndex.length) return false;
+    return pagesIndex[pageNumber - 1].isFatihaPage === true;
 }
 
 // ===== الحصول على رقم الصفحة لآية معينة =====
@@ -650,7 +667,7 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== دالة تحديث رقم الصفحة (لا تنشئ الزخرفة) =====
+// ===== دالة تحديث رقم الصفحة =====
 function updatePageNumber(pageNumber) {
     const pageNumberElement = document.getElementById('pageNumber');
     
@@ -659,7 +676,7 @@ function updatePageNumber(pageNumber) {
     pageNumberElement.textContent = convertToArabicNumbers(pageNumber);
 }
 
-// ===== ضبط تلقائي ذكي: يملأ الصفحة تماماً =====
+// ===== ضبط تلقائي ذكي =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -676,7 +693,6 @@ function autoFitContent() {
         let availableHeight = content.clientHeight;
         let contentHeight = content.scrollHeight;
         
-        // إذا كان المحتوى أطول → تصغير
         if (contentHeight > availableHeight) {
             let scale = 1;
             const minScale = 0.55;
@@ -694,7 +710,6 @@ function autoFitContent() {
             
             autoScaleActive = scale < 1;
         }
-        // إذا كان المحتوى أقصر → تكبير
         else {
             let scale = 1;
             const maxScale = 5.0;
@@ -723,7 +738,6 @@ function autoFitContent() {
 function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
     
-    // تحديث رقم الصفحة (فقط الرقم، لا الزخرفة)
     updatePageNumber(pageNumber);
     
     const pageAyahs = getPageAyahs(pageNumber);
