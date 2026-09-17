@@ -592,10 +592,10 @@ body {
         0 15px 50px rgba(0,0,0,0.9);
 }
 
-/* ===== منطقة المحتوى مع خطين سفليين ===== */
+/* ===== منطقة المحتوى ===== */
 .mushaf-content {
     flex: 1;
-    padding: 14px 12px 30px;
+    padding: 14px 12px 40px;
     overflow: hidden;
     text-align: justify;
     font-size: clamp(14px, 3vw, 20px);
@@ -611,13 +611,13 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== الخط السفلي مع رقم الصفحة في المنتصف ===== */
+/* ===== الخطين السفليين ===== */
 .bottom-lines {
     position: absolute;
     bottom: 12px;
     left: 12px;
     right: 12px;
-    height: 40px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -633,7 +633,7 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: #666666;
+    background: linear-gradient(to left, transparent, #888888 20%, #888888 80%, transparent);
     transform: translateY(-6px);
     z-index: 1;
 }
@@ -646,24 +646,67 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: #666666;
+    background: linear-gradient(to left, transparent, #888888 20%, #888888 80%, transparent);
     transform: translateY(6px);
     z-index: 1;
 }
 
-/* ===== رقم الصفحة (في المنتصف بين الخطين) ===== */
+/* ===== رقم الصفحة داخل أيقونة مزخرفة (نقطة معينية) ===== */
 .page-number {
     position: relative;
-    z-index: 2;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 26px;
+    padding: 0 12px;
     background: #000000;
     color: #00A8D6;
-    padding: 2px 16px;
-    font-size: clamp(17px, 4vw, 22px);
+    font-size: clamp(15px, 3.4vw, 18px);
     font-weight: bold;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     font-family: 'UthmanicHafs', serif;
-    text-shadow: 0 0 8px rgba(0, 168, 214, 0.6);
     line-height: 1;
+    text-shadow: 0 0 6px rgba(0, 168, 214, 0.5);
+    border: 1px solid #00A8D6;
+    border-radius: 4px;
+    box-shadow: 
+        0 0 0 2px #000000,
+        0 0 0 3px #00A8D6,
+        0 0 8px rgba(0, 168, 214, 0.35);
+}
+
+/* زخرفة معينية يمنى (◆) */
+.page-number::before {
+    content: '◆';
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00A8D6;
+    font-size: 12px;
+    line-height: 1;
+    text-shadow: 0 0 5px rgba(0, 168, 214, 0.6);
+    background: #000000;
+    padding: 0 2px;
+    z-index: 4;
+}
+
+/* زخرفة معينية يسرى (◆) */
+.page-number::after {
+    content: '◆';
+    position: absolute;
+    left: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00A8D6;
+    font-size: 12px;
+    line-height: 1;
+    text-shadow: 0 0 5px rgba(0, 168, 214, 0.6);
+    background: #000000;
+    padding: 0 2px;
+    z-index: 4;
 }
 
 /* ===== عنوان السورة ===== */
@@ -749,6 +792,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+/* ===== رقم الآية (من النص العثماني الأصلي) ===== */
 .ayah-number {
     display: inline;
     margin: 0 4px;
@@ -1156,7 +1200,7 @@ body {
     }
     
     .mushaf-content {
-        padding: 10px 8px 28px;
+        padding: 10px 8px 38px;
         font-size: clamp(13px, 2.8vw, 17px);
         line-height: 2;
     }
@@ -1165,12 +1209,25 @@ body {
         bottom: 10px;
         left: 10px;
         right: 10px;
-        height: 36px;
+        height: 32px;
     }
     
     .page-number {
-        font-size: clamp(15px, 3.6vw, 19px);
-        padding: 2px 12px;
+        min-width: 38px;
+        height: 22px;
+        padding: 0 10px;
+        font-size: clamp(13px, 3.2vw, 16px);
+        letter-spacing: 1px;
+    }
+    
+    .page-number::before {
+        right: -11px;
+        font-size: 10px;
+    }
+    
+    .page-number::after {
+        left: -11px;
+        font-size: 10px;
     }
     
     .surah-header {
