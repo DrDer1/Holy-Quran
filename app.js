@@ -213,7 +213,7 @@ function getWordCount(text) {
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات (سورة الفاتحة في صفحة منفصلة) =====
+// ===== بناء فهرس الصفحات =====
 function buildPagesIndex() {
     pagesIndex = [];
     
@@ -224,7 +224,6 @@ function buildPagesIndex() {
     }
     
     // ===== سورة الفاتحة في صفحة منفصلة =====
-    // عدد آيات الفاتحة = 7 (كلها آيات 1..7 من السورة 1)
     const fatihaEndIndex = quranData.findIndex(a => a.surah === 2);
     const fatihaEnd = fatihaEndIndex >= 0 ? fatihaEndIndex : 7;
     
@@ -234,7 +233,7 @@ function buildPagesIndex() {
         isFatihaPage: true
     });
     
-    // ===== باقي الصفحات (بناء حسب الكلمات) =====
+    // ===== باقي الصفحات =====
     const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE;
     
     let pageStart = fatihaEnd;
@@ -802,15 +801,17 @@ function displayPage(pageNumber) {
     }
 }
 
-// ===== إضافة آية إلى حاوية =====
+// ===== إضافة آية إلى حاوية (الرقم في آخر الآية) =====
 function appendAyahToContainer(container, ayah) {
+    // نص الآية أولاً
     const ayahText = document.createElement('span');
     ayahText.className = 'ayah-text';
-    ayahText.textContent = ayah.text + ' ';
+    ayahText.textContent = ayah.text;
     
+    // ثم رقم الآية في النهاية
     const ayahNumber = document.createElement('span');
     ayahNumber.className = 'ayah-number';
-    ayahNumber.textContent = convertToArabicNumbers(ayah.ayah);
+    ayahNumber.textContent = ' ' + convertToArabicNumbers(ayah.ayah);
     
     container.appendChild(ayahText);
     container.appendChild(ayahNumber);
