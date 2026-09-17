@@ -403,6 +403,51 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
+// ===== الحصول على السورة الأولى في الصفحة =====
+function getFirstSurahOfPage(pageNumber) {
+    const ayahsPerPage = 15;
+    const startIndex = (pageNumber - 1) * ayahsPerPage;
+    const pageAyahs = quranData.slice(startIndex, startIndex + 1);
+    
+    if (pageAyahs.length === 0) return null;
+    return pageAyahs[0].surah;
+}
+
+// ===== فحص إذا كانت الصفحة الحالية تكمل سورة من الصفحة السابقة =====
+function isContinuationFromPreviousPage(pageNumber) {
+    if (pageNumber <= 1) return false;
+    
+    const previousLastSurah = getLastSurahOfPage(pageNumber - 1);
+    const currentFirstSurah = getFirstSurahOfPage(pageNumber);
+    
+    if (previousLastSurah === null || currentFirstSurah === null) return false;
+    
+    // إذا كانت السورة نفسها، فهي تكملة
+    if (previousLastSurah !== currentFirstSurah) return false;
+    
+    // التحقق من أن أول آية في الصفحة ليست الآية 1 (بداية السورة)
+    const ayahsPerPage = 15;
+    const startIndex = (pageNumber - 1) * ayahsPerPage;
+    const firstAyah = quranData[startIndex];
+    
+    return firstAyah.ayah !== 1;
+}
+
+// ===== فحص إذا كانت الصفحة الحالية ستُكمل في الصفحة التالية =====
+function willContinueToNextPage(pageNumber) {
+    const ayahsPerPage = 15;
+    const startIndex = (pageNumber - 1) * ayahsPerPage;
+    const endIndex = startIndex + ayahsPerPage;
+    
+    if (endIndex >= quranData.length) return false;
+    
+    const lastAyah = quranData[endIndex - 1];
+    const nextAyah = quranData[endIndex];
+    
+    // إذا كانت السورة نفسها، فهي ستُكمل
+    return lastAyah.surah === nextAyah.surah;
+}
+
 // ===== عرض الصفحة =====
 function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
@@ -428,6 +473,15 @@ function displayPage(pageNumber) {
     updateTopBar();
     
     const previousPageLastSurah = getLastSurahOfPage(pageNumber - 1);
+    const isContinuation = isContinuationFromPreviousPage(pageNumber);
+    
+    // عرض مؤشر التكملة في أعلى الصفحة
+    if (isContinuation) {
+        const continuationIndicator = document.createElement('div');
+        continuationIndicator.className = 'continuation-indicator';
+        continuationIndicator.textContent = `سُورَةُ ${getSurahName(firstAyah.surah)} (تكملة)`;
+        content.appendChild(continuationIndicator);
+    }
     
     const surahGroups = {};
     pageAyahs.forEach(ayah => {
@@ -446,8 +500,12 @@ function displayPage(pageNumber) {
         const isNewSurah = (previousPageLastSurah === null || surahNum !== previousPageLastSurah);
         const isFirstAyahOfSurah = surahAyahs[0].ayah === 1;
         
+        // عرض رأس السورة فقط إذا كانت سورة جديدة أو بداية فعلية
         if (isNewSurah || isFirstAyahOfSurah) {
-            displaySurahHeader(content, surahNum);
+            // لا نعرض رأس السورة إذا كانت تكملة (لأن المؤشر يظهرها)
+            if (!isContinuation || index > 0 || !isFirstAyahOfSurah) {
+                displaySurahHeader(content, surahNum);
+            }
         }
         
         const ayahsContainer = document.createElement('div');
@@ -465,6 +523,14 @@ function displayPage(pageNumber) {
             content.appendChild(spacer);
         }
     });
+    
+    // عرض مؤشر "يتبع..." في أسفل الصفحة
+    if (willContinueToNextPage(pageNumber)) {
+        const followIndicator = document.createElement('div');
+        followIndicator.className = 'follow-indicator';
+        followIndicator.textContent = '... يتبع';
+        content.appendChild(followIndicator);
+    }
     
     if (pageAyahs.length > 0) {
         saveProgress(pageAyahs[0]);
@@ -643,7 +709,7 @@ function hideDedicationPage() {
     document.getElementById('dedicationPage').classList.add('hidden');
 }
 
-// ===== تنفيذ البحث (محدث) =====
+// ===== تنفيذ البحث =====
 function performSearch() {
     const searchType = document.getElementById('searchType').value;
     const searchText = document.getElementById('searchInput').value.trim();
@@ -713,13 +779,11 @@ function performSearch() {
         return;
     }
     
-    // عرض عدد النتائج
     const resultCount = document.createElement('div');
     resultCount.className = 'search-result-count';
     resultCount.textContent = `${resultLabel} — عدد النتائج: ${convertToArabicNumbers(results.length)}`;
     resultsContainer.appendChild(resultCount);
     
-    // تجميع النتائج حسب السورة عند البحث برقم آية
     if (searchType === 'ayah') {
         const surahGroups = {};
         results.forEach(ayah => {
@@ -730,20 +794,17 @@ function performSearch() {
         });
         
         Object.keys(surahGroups).forEach(surahNum => {
-            // عنوان السورة
             const groupHeader = document.createElement('div');
             groupHeader.className = 'search-result-group-header';
             groupHeader.textContent = `سُورَةُ ${getSurahName(parseInt(surahNum))}`;
             resultsContainer.appendChild(groupHeader);
             
-            // آيات السورة
             surahGroups[surahNum].forEach(ayah => {
                 const resultItem = createSearchResultItem(ayah);
                 resultsContainer.appendChild(resultItem);
             });
         });
     } else {
-        // عرض عادي
         results.forEach(ayah => {
             const resultItem = createSearchResultItem(ayah);
             resultsContainer.appendChild(resultItem);
