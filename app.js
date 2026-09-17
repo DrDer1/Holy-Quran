@@ -653,22 +653,6 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== فحص التكملة =====
-function isContinuationFromPreviousPage(pageNumber) {
-    if (pageNumber <= 1) return false;
-    
-    const previousLastSurah = getLastSurahOfPage(pageNumber - 1);
-    const currentPageAyahs = getPageAyahs(pageNumber);
-    
-    if (!currentPageAyahs.length || previousLastSurah === null) return false;
-    
-    const currentFirstSurah = currentPageAyahs[0].surah;
-    
-    if (previousLastSurah !== currentFirstSurah) return false;
-    
-    return currentPageAyahs[0].ayah !== 1;
-}
-
 // ===== ضبط تلقائي لحجم الخط =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
@@ -729,14 +713,6 @@ function displayPage(pageNumber) {
     updateTopBar();
     
     const previousPageLastSurah = getLastSurahOfPage(pageNumber - 1);
-    const isContinuation = isContinuationFromPreviousPage(pageNumber);
-    
-    if (isContinuation) {
-        const continuationIndicator = document.createElement('div');
-        continuationIndicator.className = 'continuation-indicator';
-        continuationIndicator.textContent = `سُورَةُ ${getSurahName(firstAyah.surah)} (تكملة)`;
-        content.appendChild(continuationIndicator);
-    }
     
     const surahGroups = {};
     pageAyahs.forEach(ayah => {
@@ -753,12 +729,10 @@ function displayPage(pageNumber) {
         const surahAyahs = surahGroups[surahNumber];
         
         const isNewSurah = (previousPageLastSurah === null || surahNum !== previousPageLastSurah);
-        const isFirstAyahOfSurah = surahAyahs[0].ayah === 1;
         
-        if (isNewSurah || isFirstAyahOfSurah) {
-            if (!isContinuation || index > 0 || !isFirstAyahOfSurah) {
-                displaySurahHeader(content, surahNum);
-            }
+        // عرض اسم السورة فقط إذا كانت سورة جديدة (لم تكن في الصفحة السابقة)
+        if (isNewSurah) {
+            displaySurahHeader(content, surahNum);
         }
         
         const ayahsContainer = document.createElement('div');
