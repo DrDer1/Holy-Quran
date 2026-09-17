@@ -433,7 +433,7 @@ function initializeUI() {
     });
     
     document.getElementById('fontPlus').addEventListener('click', () => {
-        currentFontSize = Math.min(currentFontSize + 0.1, 1.8);
+        currentFontSize = Math.min(currentFontSize + 0.1, 2.0);
         saveFontSize();
         displayPage(currentPageNumber);
     });
@@ -650,12 +650,11 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== ضبط تلقائي ذكي: يملأ الصفحة تماماً + يوزّع الأسطر يميناً ويساراً =====
+// ===== ضبط تلقائي ذكي: يملأ الصفحة تماماً (تكبير قوي) =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
     
-    // الحجم الأساسي
     const baseSize = window.innerWidth < 480 ? 14 : 18;
     const baseFontSize = baseSize * currentFontSize;
     
@@ -669,7 +668,7 @@ function autoFitContent() {
         let availableHeight = content.clientHeight;
         let contentHeight = content.scrollHeight;
         
-        // إذا كان المحتوى أطول من المتاح → تصغير
+        // إذا كان المحتوى أطول → تصغير
         if (contentHeight > availableHeight) {
             let scale = 1;
             const minScale = 0.55;
@@ -687,10 +686,10 @@ function autoFitContent() {
             
             autoScaleActive = scale < 1;
         }
-        // إذا كان المحتوى أقصر → تكبير حتى يمتلئ
+        // إذا كان المحتوى أقصر → تكبير قوي حتى يمتلئ
         else {
             let scale = 1;
-            const maxScale = 3.0;
+            const maxScale = 5.0; // رُفع الحد الأقصى للتكبير
             const step = 0.02;
             
             while (scale < maxScale) {
@@ -709,15 +708,6 @@ function autoFitContent() {
             
             autoScaleActive = scale > 1;
         }
-        
-        // تطبيق justify على الحاويات بعد تحديد الحجم النهائي
-        requestAnimationFrame(() => {
-            const ayahsContainers = content.querySelectorAll('.ayahs-container');
-            ayahsContainers.forEach(container => {
-                container.style.textAlign = 'justify';
-                container.style.textAlignLast = 'justify';
-            });
-        });
     });
 }
 
@@ -780,7 +770,6 @@ function displayPage(pageNumber) {
         }
     });
     
-    // استدعاء الضبط التلقائي بعد إضافة المحتوى
     setTimeout(() => {
         autoFitContent();
     }, 30);
