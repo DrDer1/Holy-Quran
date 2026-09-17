@@ -17,9 +17,9 @@ let pagesIndex = [];
 let db = null;
 
 // ===== إعدادات بناء الصفحات =====
-const WORDS_PER_LINE = 10;      // الحد الأقصى للكلمات في السطر
-const MAX_LINES_PER_PAGE = 15;  // الحد الأقصى للأسطر في الصفحة
-const TARGET_TOTAL_PAGES = 604; // الهدف النهائي لعدد الصفحات
+const WORDS_PER_LINE = 10;
+const MAX_LINES_PER_PAGE = 15;
+const TARGET_TOTAL_PAGES = 604;
 const MIN_SURAH_CHARS = 500;
 
 // ===== إعدادات IndexedDB =====
@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
             if (!isShowingOpening) {
-                applyFontSize();
                 autoFitContent();
             }
         }, 200);
@@ -215,18 +214,17 @@ function getWordCount(text) {
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات (10 كلمات لكل سطر، 15 سطر لكل صفحة) =====
+// ===== بناء فهرس الصفحات =====
 function buildPagesIndex() {
     pagesIndex = [];
     
     if (quranData.length === 0) {
-        pagesIndex.push({ start: 0, end: 0, ayahLines: [] });
+        pagesIndex.push({ start: 0, end: 0 });
         totalPages = 1;
         return;
     }
     
-    // الحد الأقصى للكلمات في الصفحة
-    const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE; // 150 كلمة
+    const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE;
     
     let pageStart = 0;
     let currentWords = 0;
@@ -235,13 +233,9 @@ function buildPagesIndex() {
         const ayah = quranData[i];
         const ayahWords = getWordCount(ayah.text);
         
-        // التحقق من نهاية السورة
         const isLastAyahOfSurah = (i === quranData.length - 1) || 
                                   (quranData[i + 1].surah !== ayah.surah);
         
-        // شروط قطع الصفحة:
-        // 1. تجاوزنا الحد الأقصى للكلمات
-        // 2. ونحن في نهاية سورة، أو تجاوزنا الحد بكثير
         const willExceed = (currentWords + ayahWords) > maxWordsPerPage;
         const shouldBreakHere = willExceed && 
                                  (isLastAyahOfSurah || currentWords > maxWordsPerPage * 0.85);
@@ -259,7 +253,6 @@ function buildPagesIndex() {
         }
     }
     
-    // إضافة الصفحة الأخيرة
     if (pageStart < quranData.length) {
         pagesIndex.push({
             start: pageStart,
@@ -269,14 +262,6 @@ function buildPagesIndex() {
     
     totalPages = pagesIndex.length;
     console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
-    
-    // ضبط دقيق: إذا تجاوزنا 604 صفحة بكثير، نحتاج لزيادة الكلمات لكل صفحة
-    // إذا كان العدد أقل بكثير من 604، نقلل
-    if (totalPages > TARGET_TOTAL_PAGES * 1.15) {
-        console.warn('عدد الصفحات أكثر من المتوقع:', totalPages);
-    } else if (totalPages < TARGET_TOTAL_PAGES * 0.85) {
-        console.warn('عدد الصفحات أقل من المتوقع:', totalPages);
-    }
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -449,16 +434,14 @@ function initializeUI() {
     
     document.getElementById('fontPlus').addEventListener('click', () => {
         currentFontSize = Math.min(currentFontSize + 0.1, 1.8);
-        applyFontSize();
-        autoFitContent();
         saveFontSize();
+        displayPage(currentPageNumber);
     });
     
     document.getElementById('fontMinus').addEventListener('click', () => {
         currentFontSize = Math.max(currentFontSize - 0.1, 0.6);
-        applyFontSize();
-        autoFitContent();
         saveFontSize();
+        displayPage(currentPageNumber);
     });
     
     document.getElementById('searchBtn').addEventListener('click', showSearchModal);
@@ -495,8 +478,6 @@ function initializeUI() {
     document.getElementById('backFromDedication').addEventListener('click', hideDedicationPage);
     
     document.addEventListener('keydown', handleKeyboardShortcuts);
-    
-    applyFontSize();
     
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         console.log('التطبيق جاهز للعمل Offline');
@@ -669,52 +650,60 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== ضبط تلقائي لحجم الخط (تكبير وتصغير لملء الصفحة) =====
+// ===== ضبط تلقائي ذكي لحجم الخط (يملأ الصفحة بالكامل) =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
     
+    // الحجم الأساسي
     const baseSize = window.innerWidth < 480 ? 14 : 18;
     const baseFontSize = baseSize * currentFontSize;
-    const baseLineHeight = 2.1;
     
+    // إعادة تعيين الحجم
     content.style.fontSize = baseFontSize + 'px';
-    content.style.lineHeight = baseLineHeight;
+    content.style.lineHeight = '2.1';
     
     autoScaleActive = false;
     
+    // استخدام requestAnimationFrame للتأكد من إعادة الرسم
     requestAnimationFrame(() => {
-        let contentHeight = content.scrollHeight;
         let availableHeight = content.clientHeight;
+        let contentHeight = content.scrollHeight;
         
+        // إذا كان المحتوى أطول من المتاح → تصغير
         if (contentHeight > availableHeight) {
             let scale = 1;
-            const minScale = 0.6;
-            const step = 0.03;
+            const minScale = 0.55;
+            const step = 0.02;
             
             while (scale > minScale) {
                 scale -= step;
                 content.style.fontSize = (baseFontSize * scale) + 'px';
                 
-                const newHeight = content.scrollHeight;
-                if (newHeight <= availableHeight) {
+                // إعادة قياس
+                contentHeight = content.scrollHeight;
+                if (contentHeight <= availableHeight) {
                     break;
                 }
             }
             
             autoScaleActive = scale < 1;
         }
-        else if (contentHeight < availableHeight * 0.92) {
+        // إذا كان المحتوى أقصر من المتاح → تكبير حتى يمتلئ
+        else {
             let scale = 1;
-            const maxScale = 1.6;
+            const maxScale = 3.0; // الحد الأقصى للتكبير (رفعناه كثيراً لملء الصفحة)
             const step = 0.02;
             
+            // قياس تدريجي
             while (scale < maxScale) {
                 const nextScale = scale + step;
                 content.style.fontSize = (baseFontSize * nextScale) + 'px';
                 
-                const newHeight = content.scrollHeight;
-                if (newHeight > availableHeight) {
+                contentHeight = content.scrollHeight;
+                
+                // إذا تجاوزنا الحد، نرجع للخطوة السابقة
+                if (contentHeight > availableHeight) {
                     content.style.fontSize = (baseFontSize * scale) + 'px';
                     break;
                 }
@@ -786,7 +775,11 @@ function displayPage(pageNumber) {
         }
     });
     
-    autoFitContent();
+    // استدعاء الضبط التلقائي بعد إضافة المحتوى
+    // استخدام setTimeout لضمان أن المتصفح قد رسم المحتوى
+    setTimeout(() => {
+        autoFitContent();
+    }, 30);
     
     if (pageAyahs.length > 0) {
         saveProgress(pageAyahs[0]);
