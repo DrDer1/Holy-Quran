@@ -12,6 +12,7 @@ let isFirstLaunch = false;
 let isShowingOpening = true;
 let quranData = [];
 let surahList = [];
+let lastShownSurahHeader = null;
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -100,7 +101,6 @@ function getSurahName(surahNumber) {
     if (info) {
         return info.name;
     }
-    // احتياطي: استخدام الاسم من quran.json
     const fallback = surahList.find(s => s.number === surahNumber);
     return fallback ? fallback.name : '';
 }
@@ -391,6 +391,19 @@ function goToPreviousPage() {
     }
 }
 
+// ===== الحصول على السورة السابقة في آخر صفحة =====
+function getLastSurahOfPage(pageNumber) {
+    if (pageNumber < 1) return null;
+    
+    const ayahsPerPage = 15;
+    const startIndex = (pageNumber - 1) * ayahsPerPage;
+    const endIndex = startIndex + ayahsPerPage;
+    const pageAyahs = quranData.slice(startIndex, endIndex);
+    
+    if (pageAyahs.length === 0) return null;
+    return pageAyahs[pageAyahs.length - 1].surah;
+}
+
 // ===== عرض الصفحة =====
 function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
@@ -415,6 +428,9 @@ function displayPage(pageNumber) {
     currentJuzNumber = getJuzNumber(firstAyah.surah, firstAyah.ayah);
     updateTopBar();
     
+    // تحديد آخر سورة تم عرض رأسها في الصفحة السابقة
+    const previousPageLastSurah = getLastSurahOfPage(pageNumber - 1);
+    
     const surahGroups = {};
     pageAyahs.forEach(ayah => {
         if (!surahGroups[ayah.surah]) {
@@ -429,7 +445,15 @@ function displayPage(pageNumber) {
         const surahNum = parseInt(surahNumber);
         const surahAyahs = surahGroups[surahNumber];
         
-        displaySurahHeader(content, surahNum);
+        // عرض رأس السورة فقط في الحالات التالية:
+        // 1. السورة مختلفة عن آخر سورة في الصفحة السابقة
+        // 2. أو أول آية في السورة هي الآية رقم 1 (بداية السورة الفعلية)
+        const isNewSurah = (previousPageLastSurah === null || surahNum !== previousPageLastSurah);
+        const isFirstAyahOfSurah = surahAyahs[0].ayah === 1;
+        
+        if (isNewSurah || isFirstAyahOfSurah) {
+            displaySurahHeader(content, surahNum);
+        }
         
         const ayahsContainer = document.createElement('div');
         ayahsContainer.className = 'ayahs-container';
