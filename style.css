@@ -510,62 +510,14 @@ body {
     cursor: grabbing;
 }
 
-/* ===== الصفحة الافتتاحية ===== */
+/* ===== الصفحة الافتتاحية (بنفس تنسيق صفحة المصحف) ===== */
 .opening-page {
     width: 100%;
     height: 100%;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    padding: 15px;
-}
-
-.opening-frame {
-    width: min(92%, 440px);
-    aspect-ratio: 9 / 16;
-    max-height: 92vh;
-    max-height: 92dvh;
-    background: #000000;
-    border: 1px solid #555555;
-    border-radius: 2px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 
-        0 0 0 3px #0a0a0a,
-        0 0 0 4px #444444,
-        0 0 0 7px #0a0a0a,
-        0 0 0 8px #333333,
-        0 20px 60px rgba(0,0,0,0.9);
-}
-
-.opening-ornament-top,
-.opening-ornament-bottom {
-    color: #999999;
-    font-size: 32px;
-    flex-shrink: 0;
-    padding: 10px 0;
-}
-
-.opening-content {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.opening-title {
-    font-size: clamp(28px, 6vw, 44px);
-    color: #f0f0f0;
-    font-weight: bold;
-    letter-spacing: 4px;
-    text-align: center;
-    line-height: 2;
-    font-family: 'UthmanicHafs', serif;
+    padding: 0;
 }
 
 /* ===== صفحة المصحف (تملأ الشاشة) ===== */
@@ -606,7 +558,7 @@ body {
     display: block;
 }
 
-/* ===== منطقة المحتوى ===== */
+/* ===== منطقة المحتوى العامة ===== */
 .mushaf-content {
     position: relative;
     z-index: 3;
@@ -624,6 +576,47 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+}
+
+/* ===== محتوى الصفحة الافتتاحية (في المنتصف) ===== */
+.opening-content-inner {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.opening-title {
+    font-size: clamp(36px, 9vw, 68px);
+    color: #d4af37;
+    font-weight: bold;
+    letter-spacing: 6px;
+    text-align: center;
+    line-height: 1.6;
+    font-family: 'UthmanicHafs', 'Amiri Quran', serif;
+    text-shadow: 
+        0 0 20px rgba(212, 175, 55, 0.35),
+        0 0 40px rgba(212, 175, 55, 0.15);
+    padding: 20px;
+    position: relative;
+}
+
+.opening-title::before,
+.opening-title::after {
+    content: '❁';
+    display: block;
+    color: #d4af37;
+    font-size: 0.5em;
+    letter-spacing: 0;
+    margin: 20px auto;
+    opacity: 0.75;
+}
+
+.opening-title::before {
+    content: '❁';
+}
+
+.opening-title::after {
+    content: '❁';
 }
 
 /* ===== زخرفة رقم الصفحة (مدالية إسلامية) ===== */
@@ -1165,6 +1158,11 @@ body {
         line-height: 2;
     }
     
+    .opening-title {
+        font-size: clamp(30px, 8vw, 48px);
+        letter-spacing: 4px;
+    }
+    
     .page-number-ornament {
         width: clamp(50px, 11vw, 66px);
         height: clamp(28px, 6.2vw, 40px);
@@ -1187,14 +1185,6 @@ body {
     
     .ayah-number {
         margin: 0 3px;
-    }
-    
-    .opening-frame {
-        width: min(90%, 380px);
-    }
-    
-    .opening-title {
-        font-size: clamp(24px, 5vw, 34px);
     }
     
     .loading-frame,
@@ -1256,6 +1246,11 @@ body {
         line-height: 1.9;
     }
     
+    .opening-title {
+        font-size: clamp(28px, 5vw, 42px);
+        letter-spacing: 3px;
+    }
+    
     .page-number-ornament {
         width: clamp(46px, 6vw, 60px);
         height: clamp(26px, 3.5vw, 36px);
@@ -1290,6 +1285,11 @@ body {
         padding: 26px 28px 42px;
         font-size: clamp(15px, 1.8vw, 20px);
         line-height: 2.1;
+    }
+    
+    .opening-title {
+        font-size: clamp(40px, 6vw, 60px);
+        letter-spacing: 5px;
     }
     
     .page-number-ornament {
@@ -1328,6 +1328,11 @@ body {
         padding: 32px 34px 48px;
         font-size: clamp(16px, 1.3vw, 22px);
         line-height: 2.15;
+    }
+    
+    .opening-title {
+        font-size: clamp(48px, 5vw, 72px);
+        letter-spacing: 8px;
     }
     
     .page-number-ornament {
