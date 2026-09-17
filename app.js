@@ -17,6 +17,7 @@ let db = null;
 
 // ===== إعدادات بناء الصفحات =====
 const MAX_SURAHS_PER_PAGE = 2;
+const TARGET_WEIGHT = 900;
 const FIXED_FONT_SIZE_MOBILE = 16;
 const FIXED_FONT_SIZE_DESKTOP = 20;
 
@@ -206,13 +207,13 @@ function getSurahName(surahNumber) {
     return fallback ? fallback.name : '';
 }
 
-// ===== حساب عدد الكلمات في نص =====
+// ===== حساب عدد الكلمات =====
 function getWordCount(text) {
     if (!text) return 0;
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== حساب وزن نص (عدد الأحرف بدون تشكيل) =====
+// ===== حساب وزن النص (عدد الأحرف بدون تشكيل) =====
 function getTextWeight(text) {
     if (!text) return 0;
     const cleaned = text
@@ -222,7 +223,7 @@ function getTextWeight(text) {
     return cleaned.length;
 }
 
-// ===== بناء فهرس الصفحات (بدون عدد ثابت — حسب الوزن) =====
+// ===== بناء فهرس الصفحات =====
 function buildPagesIndex() {
     pagesIndex = [];
     
@@ -242,10 +243,7 @@ function buildPagesIndex() {
         isFatihaPage: true
     });
     
-    // ===== باقي الصفحات (بدون حد ثابت — فقط حد السورتين + حدود طبيعية) =====
-    // نستخدم وزن تقريبي للتوزيع بناءً على 1000 حرف
-    const TARGET_WEIGHT = 1000;
-    
+    // ===== باقي الصفحات حسب الوزن =====
     let pageStart = fatihaEnd;
     let currentWeight = 0;
     let currentSurahCount = 0;
@@ -288,7 +286,7 @@ function buildPagesIndex() {
     }
     
     totalPages = pagesIndex.length;
-    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة (وزن:', TARGET_WEIGHT, ')');
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -688,7 +686,7 @@ function applyFixedFontSize() {
     const finalSize = baseSize * currentFontSize;
     
     content.style.fontSize = finalSize + 'px';
-    content.style.lineHeight = '2.1';
+    content.style.lineHeight = '1.65';
 }
 
 // ===== عرض الصفحة =====
