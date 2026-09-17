@@ -13,6 +13,11 @@ let isShowingOpening = true;
 let quranData = [];
 let surahList = [];
 let autoScaleActive = false;
+let pagesIndex = []; // مصفوفة تحتوي على حدود كل صفحة
+
+// ===== إعدادات بناء الصفحات =====
+const CHARS_PER_PAGE = 1000; // عدد الأحرف التقريبي لكل صفحة
+const MIN_SURAH_CHARS = 500;  // الحد الأدنى لأحرف السورة القصيرة
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -36,13 +41,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
+    // بناء فهرس الصفحات التقديري
+    buildPagesIndex();
+    
     hideLoadingScreen();
     loadSettings();
     initializeUI();
     determineInitialView();
     setupSwipeGestures();
     
-    // إعادة تطبيق حجم الخط عند تغيير حجم النافذة
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
@@ -84,6 +91,8 @@ async function retryLoad() {
         return;
     }
     
+    buildPagesIndex();
+    
     hideLoadingScreen();
     loadSettings();
     initializeUI();
@@ -115,6 +124,89 @@ function getSurahName(surahNumber) {
     }
     const fallback = surahList.find(s => s.number === surahNumber);
     return fallback ? fallback.name : '';
+}
+
+// ===== حساب وزن النص (عدد الأحرف بدون تشكيل) =====
+function getTextWeight(text) {
+    if (!text) return 0;
+    // إزالة التشكيل والرموز لحساب الوزن الحقيقي
+    const cleaned = text
+        .replace(/[\u064B-\u065F\u0670]/g, '')
+        .replace(/[\u06D6-\u06ED]/g, '')
+        .trim();
+    return cleaned.length;
+}
+
+// ===== بناء فهرس الصفحات الذكي =====
+function buildPagesIndex() {
+    pagesIndex = [];
+    
+    // إذا لم توجد بيانات
+    if (quranData.length === 0) {
+        pagesIndex.push({ start: 0, end: 0 });
+        totalPages = 1;
+        return;
+    }
+    
+    let pageStart = 0;
+    let currentChars = 0;
+    
+    for (let i = 0; i < quranData.length; i++) {
+        const ayah = quranData[i];
+        const ayahWeight = getTextWeight(ayah.text);
+        
+        // التحقق من نهاية السورة
+        const isLastAyahOfSurah = (i === quranData.length - 1) || 
+                                  (quranData[i + 1].surah !== ayah.surah);
+        
+        // إذا تجاوزنا الحد وأصبح بإمكاننا قطع الصفحة
+        // القطع مسموح فقط في نهاية السورة أو عند تجاوز الحد بكثير
+        const shouldBreakHere = (currentChars + ayahWeight > CHARS_PER_PAGE) && 
+                                 (isLastAyahOfSurah || currentChars > CHARS_PER_PAGE * 1.3);
+        
+        if (shouldBreakHere && i > pageStart) {
+            // حفظ الصفحة الحالية
+            pagesIndex.push({
+                start: pageStart,
+                end: i  // الصفحة تنتهي عند الآية i-1
+            });
+            
+            // بداية صفحة جديدة
+            pageStart = i;
+            currentChars = ayahWeight;
+        } else {
+            currentChars += ayahWeight;
+        }
+    }
+    
+    // إضافة الصفحة الأخيرة
+    if (pageStart < quranData.length) {
+        pagesIndex.push({
+            start: pageStart,
+            end: quranData.length
+        });
+    }
+    
+    totalPages = pagesIndex.length;
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
+}
+
+// ===== الحصول على الآيات في صفحة معينة =====
+function getPageAyahs(pageNumber) {
+    if (pageNumber < 1 || pageNumber > pagesIndex.length) return [];
+    
+    const pageInfo = pagesIndex[pageNumber - 1];
+    return quranData.slice(pageInfo.start, pageInfo.end);
+}
+
+// ===== الحصول على رقم الصفحة لآية معينة =====
+function getPageOfAyah(ayahIndex) {
+    for (let i = 0; i < pagesIndex.length; i++) {
+        if (ayahIndex >= pagesIndex[i].start && ayahIndex < pagesIndex[i].end) {
+            return i + 1;
+        }
+    }
+    return 1;
 }
 
 // ===== تحميل القرآن من quran.json =====
@@ -409,23 +501,10 @@ function goToPreviousPage() {
 function getLastSurahOfPage(pageNumber) {
     if (pageNumber < 1) return null;
     
-    const ayahsPerPage = 15;
-    const startIndex = (pageNumber - 1) * ayahsPerPage;
-    const endIndex = startIndex + ayahsPerPage;
-    const pageAyahs = quranData.slice(startIndex, endIndex);
-    
+    const pageAyahs = getPageAyahs(pageNumber);
     if (pageAyahs.length === 0) return null;
+    
     return pageAyahs[pageAyahs.length - 1].surah;
-}
-
-// ===== الحصول على السورة الأولى في الصفحة =====
-function getFirstSurahOfPage(pageNumber) {
-    const ayahsPerPage = 15;
-    const startIndex = (pageNumber - 1) * ayahsPerPage;
-    const pageAyahs = quranData.slice(startIndex, startIndex + 1);
-    
-    if (pageAyahs.length === 0) return null;
-    return pageAyahs[0].surah;
 }
 
 // ===== فحص إذا كانت الصفحة الحالية تكمل سورة من الصفحة السابقة =====
@@ -433,38 +512,35 @@ function isContinuationFromPreviousPage(pageNumber) {
     if (pageNumber <= 1) return false;
     
     const previousLastSurah = getLastSurahOfPage(pageNumber - 1);
-    const currentFirstSurah = getFirstSurahOfPage(pageNumber);
+    const currentPageAyahs = getPageAyahs(pageNumber);
     
-    if (previousLastSurah === null || currentFirstSurah === null) return false;
+    if (!currentPageAyahs.length || previousLastSurah === null) return false;
+    
+    const currentFirstSurah = currentPageAyahs[0].surah;
+    
     if (previousLastSurah !== currentFirstSurah) return false;
     
-    const ayahsPerPage = 15;
-    const startIndex = (pageNumber - 1) * ayahsPerPage;
-    const firstAyah = quranData[startIndex];
-    
-    return firstAyah.ayah !== 1;
+    return currentPageAyahs[0].ayah !== 1;
 }
 
 // ===== فحص إذا كانت الصفحة الحالية ستُكمل في الصفحة التالية =====
 function willContinueToNextPage(pageNumber) {
-    const ayahsPerPage = 15;
-    const startIndex = (pageNumber - 1) * ayahsPerPage;
-    const endIndex = startIndex + ayahsPerPage;
+    const currentPageAyahs = getPageAyahs(pageNumber);
+    const nextPageAyahs = getPageAyahs(pageNumber + 1);
     
-    if (endIndex >= quranData.length) return false;
+    if (!currentPageAyahs.length || !nextPageAyahs.length) return false;
     
-    const lastAyah = quranData[endIndex - 1];
-    const nextAyah = quranData[endIndex];
+    const lastAyah = currentPageAyahs[currentPageAyahs.length - 1];
+    const nextFirstAyah = nextPageAyahs[0];
     
-    return lastAyah.surah === nextAyah.surah;
+    return lastAyah.surah === nextFirstAyah.surah;
 }
 
-// ===== ضبط تلقائي لحجم الخط ليناسب الصفحة =====
+// ===== ضبط تلقائي لحجم الخط =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
     
-    // إعادة تعيين الحجم الأساسي أولاً
     const baseSize = window.innerWidth < 480 ? 14 : 18;
     const baseFontSize = baseSize * currentFontSize;
     const baseLineHeight = 2.1;
@@ -472,7 +548,6 @@ function autoFitContent() {
     content.style.fontSize = baseFontSize + 'px';
     content.style.lineHeight = baseLineHeight;
     
-    // إزالة مؤشر الضبط التلقائي السابق إن وجد
     const existingIndicator = content.querySelector('.auto-scale-indicator');
     if (existingIndicator) {
         existingIndicator.remove();
@@ -480,23 +555,19 @@ function autoFitContent() {
     
     autoScaleActive = false;
     
-    // قياس المحتوى بعد الرسم
     requestAnimationFrame(() => {
         const contentHeight = content.scrollHeight;
         const availableHeight = content.clientHeight;
         
-        // إذا كان المحتوى يتجاوز المتاح
         if (contentHeight > availableHeight) {
             let scale = 1;
-            const minScale = 0.65;
+            const minScale = 0.6;
             const step = 0.03;
             
-            // تصغير تدريجي حتى يتناسب
             while (scale > minScale) {
                 scale -= step;
                 content.style.fontSize = (baseFontSize * scale) + 'px';
                 
-                // إعادة قياس
                 const newHeight = content.scrollHeight;
                 if (newHeight <= availableHeight) {
                     break;
@@ -505,7 +576,6 @@ function autoFitContent() {
             
             autoScaleActive = scale < 1;
             
-            // عرض مؤشر إذا تم التصغير
             if (autoScaleActive) {
                 const indicator = document.createElement('div');
                 indicator.className = 'auto-scale-indicator';
@@ -521,11 +591,10 @@ function displayPage(pageNumber) {
     currentPageNumber = pageNumber;
     
     document.getElementById('pageNumber').textContent = convertToArabicNumbers(pageNumber);
+    document.getElementById('totalPagesText') && 
+        (document.getElementById('totalPagesText').textContent = convertToArabicNumbers(totalPages));
     
-    const ayahsPerPage = 15;
-    const startIndex = (pageNumber - 1) * ayahsPerPage;
-    const endIndex = startIndex + ayahsPerPage;
-    const pageAyahs = quranData.slice(startIndex, endIndex);
+    const pageAyahs = getPageAyahs(pageNumber);
     
     const content = document.getElementById('mushafContent');
     content.innerHTML = '';
@@ -596,7 +665,6 @@ function displayPage(pageNumber) {
         content.appendChild(followIndicator);
     }
     
-    // ضبط تلقائي لحجم الخط بعد رسم المحتوى
     autoFitContent();
     
     if (pageAyahs.length > 0) {
@@ -757,10 +825,9 @@ function saveBookmark() {
 
 // ===== الانتقال إلى سورة =====
 function goToSurah(surahNumber) {
-    const firstAyah = quranData.find(a => a.surah === surahNumber);
-    if (firstAyah) {
-        const ayahIndex = quranData.indexOf(firstAyah);
-        currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+    const firstAyahIndex = quranData.findIndex(a => a.surah === surahNumber);
+    if (firstAyahIndex >= 0) {
+        currentPageNumber = getPageOfAyah(firstAyahIndex);
         showMushafPage();
         displayPage(currentPageNumber);
     }
@@ -895,7 +962,7 @@ function createSearchResultItem(ayah) {
     
     resultItem.addEventListener('click', () => {
         const ayahIndex = quranData.indexOf(ayah);
-        currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+        currentPageNumber = getPageOfAyah(ayahIndex);
         showMushafPage();
         displayPage(currentPageNumber);
         document.getElementById('searchModal').classList.add('hidden');
