@@ -580,7 +580,6 @@ body {
 
 .mushaf-frame {
     position: relative;
-    /* الحجم يتبع ارتفاع وعرض الحاوية مع الحفاظ على نسبة 9:16 */
     height: 100%;
     width: auto;
     aspect-ratio: 9 / 16;
@@ -1244,7 +1243,6 @@ body {
         padding: 2px;
     }
     
-    /* في الوضع الأفقي، الصفحة تتمدد حسب الارتفاع المتاح */
     .mushaf-frame {
         height: 100%;
         width: auto;
@@ -1342,7 +1340,7 @@ body {
     }
 }
 
-/* شاشات عريضة جداً - الوضع الأفقي على الكمبيوتر */
+/* شاشات عريضة جداً */
 @media (min-width: 1025px) and (orientation: landscape) {
     .mushaf-frame {
         height: 100%;
