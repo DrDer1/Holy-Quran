@@ -26,10 +26,8 @@ const DEDICATION_TEXT = `
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('تهيئة المصحف...');
     
-    // إعداد زر إعادة المحاولة
     document.getElementById('retryButton').addEventListener('click', retryLoad);
     
-    // محاولة تحميل البيانات
     const success = await loadQuran();
     
     if (!success) {
@@ -37,19 +35,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // إخفاء شاشة التحميل وإظهار التطبيق
     hideLoadingScreen();
-    
-    // استعادة الإعدادات
     loadSettings();
-    
-    // تهيئة الواجهة
     initializeUI();
-    
-    // تحديد العرض الأولي
     determineInitialView();
-    
-    // تفعيل السحب
     setupSwipeGestures();
 });
 
@@ -103,6 +92,17 @@ function normalizeArabic(text) {
         .replace(/ئ/g, 'ي')
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+// ===== دالة الحصول على الاسم المشكّل =====
+function getSurahName(surahNumber) {
+    const info = surahNames.find(s => s.number === surahNumber);
+    if (info) {
+        return info.name;
+    }
+    // احتياطي: استخدام الاسم من quran.json
+    const fallback = surahList.find(s => s.number === surahNumber);
+    return fallback ? fallback.name : '';
 }
 
 // ===== تحميل القرآن من quran.json =====
@@ -469,11 +469,11 @@ function appendAyahToContainer(container, ayah) {
 
 // ===== عرض رأس السورة =====
 function displaySurahHeader(content, surahNumber) {
-    const surahInfo = surahList.find(s => s.number === surahNumber);
-    if (surahInfo) {
+    const surahName = getSurahName(surahNumber);
+    if (surahName) {
         const surahHeader = document.createElement('div');
         surahHeader.className = 'surah-header';
-        surahHeader.textContent = `سُورَةُ ${surahInfo.name}`;
+        surahHeader.textContent = `سُورَةُ ${surahName}`;
         content.appendChild(surahHeader);
         
         if (surahNumber !== 1 && surahNumber !== 9) {
@@ -487,10 +487,8 @@ function displaySurahHeader(content, surahNumber) {
 
 // ===== تحديث الشريط العلوي =====
 function updateTopBar() {
-    const surahInfo = surahList.find(s => s.number === currentSurahNumber);
-    if (surahInfo) {
-        document.getElementById('topSurahName').textContent = `سُورَةُ ${surahInfo.name}`;
-    }
+    const surahName = getSurahName(currentSurahNumber);
+    document.getElementById('topSurahName').textContent = `سُورَةُ ${surahName}`;
     document.getElementById('topJuzName').textContent = `الجزء ${convertToArabicNumbers(currentJuzNumber)}`;
 }
 
@@ -537,7 +535,7 @@ function showIndexModal() {
         item.className = 'index-item';
         item.innerHTML = `
             <span class="index-number">${convertToArabicNumbers(surah.number)}</span>
-            <span class="index-name">${surah.name}</span>
+            <span class="index-name">${getSurahName(surah.number)}</span>
             <span class="index-info">${surah.type}</span>
         `;
         
@@ -574,8 +572,7 @@ function showBookmarksModal() {
         const item = document.createElement('div');
         item.className = 'bookmark-item';
         
-        const surahInfo = surahList.find(s => s.number === bookmark.surah);
-        const surahName = surahInfo ? surahInfo.name : '';
+        const surahName = getSurahName(bookmark.surah);
         
         item.innerHTML = `
             <div style="font-weight:bold;margin-bottom:3px;">الصفحة ${convertToArabicNumbers(bookmark.page)}</div>
@@ -694,8 +691,7 @@ function performSearch() {
         const resultItem = document.createElement('div');
         resultItem.className = 'search-result-item';
         
-        const surahInfo = surahList.find(s => s.number === ayah.surah);
-        const surahName = surahInfo ? surahInfo.name : '';
+        const surahName = getSurahName(ayah.surah);
         
         resultItem.innerHTML = `
             <div style="font-weight:bold;color:#00A8D6;margin-bottom:4px;">
