@@ -135,10 +135,143 @@
                 <!-- صفحة المصحف -->
                 <div id="mushafPage" class="mushaf-page hidden">
                     <div class="mushaf-frame">
+                        <!-- إطار الصفحة الزخرفي (SVG) -->
+                        <svg class="quran-page-border" viewBox="0 0 400 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <defs>
+                                <!-- نمط تكرار الزخرفة النباتية -->
+                                <pattern id="sidePatternLeft" x="0" y="0" width="16" height="40" patternUnits="userSpaceOnUse">
+                                    <path d="M 8 0 Q 14 10 8 20 Q 2 30 8 40" fill="none" stroke="#b8860b" stroke-width="0.8" opacity="0.7"/>
+                                    <circle cx="8" cy="20" r="1.2" fill="#d4af37" opacity="0.6"/>
+                                </pattern>
+                                <pattern id="sidePatternRight" x="0" y="0" width="16" height="40" patternUnits="userSpaceOnUse">
+                                    <path d="M 8 0 Q 2 10 8 20 Q 14 30 8 40" fill="none" stroke="#b8860b" stroke-width="0.8" opacity="0.7"/>
+                                    <circle cx="8" cy="20" r="1.2" fill="#d4af37" opacity="0.6"/>
+                                </pattern>
+                                <pattern id="topPattern" x="0" y="0" width="40" height="16" patternUnits="userSpaceOnUse">
+                                    <path d="M 0 8 Q 10 2 20 8 Q 30 14 40 8" fill="none" stroke="#b8860b" stroke-width="0.8" opacity="0.7"/>
+                                    <circle cx="20" cy="8" r="1.2" fill="#d4af37" opacity="0.6"/>
+                                </pattern>
+                                <pattern id="bottomPattern" x="0" y="0" width="40" height="16" patternUnits="userSpaceOnUse">
+                                    <path d="M 0 8 Q 10 14 20 8 Q 30 2 40 8" fill="none" stroke="#b8860b" stroke-width="0.8" opacity="0.7"/>
+                                    <circle cx="20" cy="8" r="1.2" fill="#d4af37" opacity="0.6"/>
+                                </pattern>
+                            </defs>
+
+                            <!-- الإطار الخارجي الرئيسي -->
+                            <rect x="4" y="4" width="392" height="692" fill="none" stroke="#d4af37" stroke-width="1.2" rx="2" ry="2"/>
+                            
+                            <!-- الإطار الداخلي الثاني -->
+                            <rect x="10" y="10" width="380" height="680" fill="none" stroke="#b8860b" stroke-width="0.8" rx="1" ry="1"/>
+
+                            <!-- أشرطة الزخرفة الجانبية -->
+                            <rect x="14" y="30" width="14" height="640" fill="url(#sidePatternLeft)" opacity="0.5"/>
+                            <rect x="372" y="30" width="14" height="640" fill="url(#sidePatternRight)" opacity="0.5"/>
+
+                            <!-- أشرطة الزخرفة العلوية والسفلية -->
+                            <rect x="30" y="14" width="340" height="14" fill="url(#topPattern)" opacity="0.5"/>
+                            <rect x="30" y="672" width="340" height="14" fill="url(#bottomPattern)" opacity="0.5"/>
+
+                            <!-- ===== الزاوية العلوية اليمنى ===== -->
+                            <g transform="translate(24, 24)" fill="none" stroke="#d4af37" stroke-width="1">
+                                <path d="M 0 0 L 22 0 M 0 0 L 0 22"/>
+                                <path d="M 4 4 Q 10 8 4 12 Q -2 16 4 20" stroke-width="0.8" opacity="0.8"/>
+                                <path d="M 4 4 Q 8 10 12 4 Q 16 -2 20 4" stroke-width="0.8" opacity="0.8"/>
+                                <circle cx="7" cy="7" r="1.5" fill="#d4af37" stroke="none"/>
+                                <path d="M 14 14 L 18 18 M 18 14 L 14 18" stroke="#b8860b" stroke-width="0.6" opacity="0.7"/>
+                            </g>
+
+                            <!-- ===== الزاوية العلوية اليسرى ===== -->
+                            <g transform="translate(376, 24) scale(-1, 1)" fill="none" stroke="#d4af37" stroke-width="1">
+                                <path d="M 0 0 L 22 0 M 0 0 L 0 22"/>
+                                <path d="M 4 4 Q 10 8 4 12 Q -2 16 4 20" stroke-width="0.8" opacity="0.8"/>
+                                <path d="M 4 4 Q 8 10 12 4 Q 16 -2 20 4" stroke-width="0.8" opacity="0.8"/>
+                                <circle cx="7" cy="7" r="1.5" fill="#d4af37" stroke="none"/>
+                                <path d="M 14 14 L 18 18 M 18 14 L 14 18" stroke="#b8860b" stroke-width="0.6" opacity="0.7"/>
+                            </g>
+
+                            <!-- ===== الزاوية السفلية اليمنى ===== -->
+                            <g transform="translate(24, 676) scale(1, -1)" fill="none" stroke="#d4af37" stroke-width="1">
+                                <path d="M 0 0 L 22 0 M 0 0 L 0 22"/>
+                                <path d="M 4 4 Q 10 8 4 12 Q -2 16 4 20" stroke-width="0.8" opacity="0.8"/>
+                                <path d="M 4 4 Q 8 10 12 4 Q 16 -2 20 4" stroke-width="0.8" opacity="0.8"/>
+                                <circle cx="7" cy="7" r="1.5" fill="#d4af37" stroke="none"/>
+                                <path d="M 14 14 L 18 18 M 18 14 L 14 18" stroke="#b8860b" stroke-width="0.6" opacity="0.7"/>
+                            </g>
+
+                            <!-- ===== الزاوية السفلية اليسرى ===== -->
+                            <g transform="translate(376, 676) scale(-1, -1)" fill="none" stroke="#d4af37" stroke-width="1">
+                                <path d="M 0 0 L 22 0 M 0 0 L 0 22"/>
+                                <path d="M 4 4 Q 10 8 4 12 Q -2 16 4 20" stroke-width="0.8" opacity="0.8"/>
+                                <path d="M 4 4 Q 8 10 12 4 Q 16 -2 20 4" stroke-width="0.8" opacity="0.8"/>
+                                <circle cx="7" cy="7" r="1.5" fill="#d4af37" stroke="none"/>
+                                <path d="M 14 14 L 18 18 M 18 14 L 14 18" stroke="#b8860b" stroke-width="0.6" opacity="0.7"/>
+                            </g>
+
+                            <!-- ===== فتحة الحد السفلي في المنتصف (لزخرفة الرقم) ===== -->
+                            <!-- نرسم الحد السفلي الداخلي مقطوعاً في المنتصف -->
+                            <path d="M 10 690 L 155 690" fill="none" stroke="#b8860b" stroke-width="0.8"/>
+                            <path d="M 245 690 L 390 690" fill="none" stroke="#b8860b" stroke-width="0.8"/>
+
+                            <!-- زخرفتان صغيرتان تحيطان بالفتحة -->
+                            <g fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.9">
+                                <path d="M 155 690 Q 160 686 165 690 Q 170 694 175 690"/>
+                                <circle cx="165" cy="690" r="1" fill="#d4af37" stroke="none"/>
+                                <path d="M 225 690 Q 230 686 235 690 Q 240 694 245 690"/>
+                                <circle cx="235" cy="690" r="1" fill="#d4af37" stroke="none"/>
+                            </g>
+                        </svg>
+
+                        <!-- محتوى الصفحة (الآيات) -->
                         <div class="mushaf-content" id="mushafContent">
                             <!-- محتوى الصفحة -->
                         </div>
-                        <div class="page-number" id="pageNumber">١</div>
+
+                        <!-- زخرفة رقم الصفحة (مدالية إسلامية) -->
+                        <div class="page-number-ornament">
+                            <svg class="page-number-svg" viewBox="0 0 120 60" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <!-- المدالية الخارجية -->
+                                <path d="M 60 4 
+                                         Q 20 4 8 20 
+                                         Q 4 30 8 40 
+                                         Q 20 56 60 56 
+                                         Q 100 56 112 40 
+                                         Q 116 30 112 20 
+                                         Q 100 4 60 4 Z" 
+                                      fill="#000000" 
+                                      stroke="#d4af37" 
+                                      stroke-width="1.5"/>
+                                
+                                <!-- الإطار الداخلي الرقيق -->
+                                <path d="M 60 10 
+                                         Q 26 10 16 22 
+                                         Q 12 30 16 38 
+                                         Q 26 50 60 50 
+                                         Q 94 50 104 38 
+                                         Q 108 30 104 22 
+                                         Q 94 10 60 10 Z" 
+                                      fill="none" 
+                                      stroke="#b8860b" 
+                                      stroke-width="0.7" 
+                                      opacity="0.8"/>
+                                
+                                <!-- زخارف جانبية (يمين) -->
+                                <g fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.9">
+                                    <path d="M 8 30 Q 2 26 4 30 Q 6 34 8 30"/>
+                                    <path d="M 112 30 Q 118 26 116 30 Q 114 34 112 30"/>
+                                </g>
+
+                                <!-- زخارف صغيرة أعلى وأسفل المدالية -->
+                                <circle cx="60" cy="2" r="1.5" fill="#d4af37"/>
+                                <circle cx="60" cy="58" r="1.5" fill="#d4af37"/>
+                                
+                                <!-- نجمة ثمانية صغيرة على الجانبين -->
+                                <g fill="#b8860b" opacity="0.85">
+                                    <circle cx="20" cy="30" r="1.2"/>
+                                    <circle cx="100" cy="30" r="1.2"/>
+                                </g>
+                            </svg>
+                            <span id="pageNumber">١</span>
+                        </div>
                     </div>
                 </div>
             </div>
