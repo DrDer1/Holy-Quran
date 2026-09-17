@@ -669,20 +669,7 @@ function isContinuationFromPreviousPage(pageNumber) {
     return currentPageAyahs[0].ayah !== 1;
 }
 
-// ===== فحص الاستمرار =====
-function willContinueToNextPage(pageNumber) {
-    const currentPageAyahs = getPageAyahs(pageNumber);
-    const nextPageAyahs = getPageAyahs(pageNumber + 1);
-    
-    if (!currentPageAyahs.length || !nextPageAyahs.length) return false;
-    
-    const lastAyah = currentPageAyahs[currentPageAyahs.length - 1];
-    const nextFirstAyah = nextPageAyahs[0];
-    
-    return lastAyah.surah === nextFirstAyah.surah;
-}
-
-// ===== ضبط تلقائي لحجم الخط (بدون مؤشر) =====
+// ===== ضبط تلقائي لحجم الخط =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -789,13 +776,6 @@ function displayPage(pageNumber) {
             content.appendChild(spacer);
         }
     });
-    
-    if (willContinueToNextPage(pageNumber)) {
-        const followIndicator = document.createElement('div');
-        followIndicator.className = 'follow-indicator';
-        followIndicator.textContent = '... يتبع';
-        content.appendChild(followIndicator);
-    }
     
     autoFitContent();
     
