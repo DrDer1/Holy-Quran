@@ -1,7 +1,7 @@
 // ===== المتغيرات العامة =====
 let currentPageNumber = 1;
 let totalPages = 604;
-let currentFontSize = 1;
+let currentFontSize = 1.15;
 let touchStartX = 0;
 let touchEndX = 0;
 let isDragging = false;
@@ -224,7 +224,6 @@ function buildPagesIndex() {
         return;
     }
     
-    // سورة الفاتحة في صفحة منفصلة
     const fatihaEndIndex = quranData.findIndex(a => a.surah === 2);
     const fatihaEnd = fatihaEndIndex >= 0 ? fatihaEndIndex : 7;
     
@@ -234,7 +233,6 @@ function buildPagesIndex() {
         isFatihaPage: true
     });
     
-    // باقي الصفحات
     const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE;
     
     let pageStart = fatihaEnd;
@@ -386,10 +384,14 @@ async function loadQuran() {
 
 // ===== تحميل الإعدادات =====
 function loadSettings() {
-    const savedFontSize = localStorage.getItem('quranFontSize');
-    if (savedFontSize) {
-        currentFontSize = parseFloat(savedFontSize);
-    }
+    // تجاهل حجم الخط المحفوظ لأننا زدناه درجتين
+    // const savedFontSize = localStorage.getItem('quranFontSize');
+    // if (savedFontSize) {
+    //     currentFontSize = parseFloat(savedFontSize);
+    // }
+    
+    // حفظ الحجم الجديد
+    localStorage.setItem('quranFontSize', currentFontSize.toString());
     
     const savedProgress = localStorage.getItem('quranProgress');
     if (savedProgress) {
@@ -683,7 +685,7 @@ function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
     
-    const baseSize = window.innerWidth < 480 ? 14 : 18;
+    const baseSize = window.innerWidth < 480 ? 16 : 20;
     const baseFontSize = baseSize * currentFontSize;
     
     content.style.fontSize = baseFontSize + 'px';
@@ -868,7 +870,7 @@ function convertToArabicNumbers(number) {
 function applyFontSize() {
     const content = document.getElementById('mushafContent');
     if (content) {
-        const baseSize = window.innerWidth < 480 ? 14 : 18;
+        const baseSize = window.innerWidth < 480 ? 16 : 20;
         content.style.fontSize = (baseSize * currentFontSize) + 'px';
         content.style.lineHeight = (2.1 * currentFontSize).toFixed(2);
     }
