@@ -12,15 +12,14 @@ let isFirstLaunch = false;
 let isShowingOpening = true;
 let quranData = [];
 let surahList = [];
-let autoScaleActive = false;
 let pagesIndex = [];
 let db = null;
 
 // ===== إعدادات بناء الصفحات =====
-const WORDS_PER_LINE = 10;
-const MAX_LINES_PER_PAGE = 15;
-const TARGET_TOTAL_PAGES = 604;
+const WORDS_PER_PAGE = 80;
 const MAX_SURAHS_PER_PAGE = 2;
+const FIXED_FONT_SIZE_MOBILE = 16;
+const FIXED_FONT_SIZE_DESKTOP = 20;
 
 // ===== إعدادات IndexedDB =====
 const DB_NAME = 'QuranDB';
@@ -69,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
             if (!isShowingOpening) {
-                displayPage(currentPageNumber);
+                applyFixedFontSize();
             }
         }, 200);
     });
@@ -214,7 +213,7 @@ function getWordCount(text) {
     return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات =====
+// ===== بناء فهرس الصفحات (حسب عدد الكلمات الثابت لكل صفحة) =====
 function buildPagesIndex() {
     pagesIndex = [];
     
@@ -224,6 +223,7 @@ function buildPagesIndex() {
         return;
     }
     
+    // ===== سورة الفاتحة في صفحة منفصلة =====
     const fatihaEndIndex = quranData.findIndex(a => a.surah === 2);
     const fatihaEnd = fatihaEndIndex >= 0 ? fatihaEndIndex : 7;
     
@@ -233,8 +233,7 @@ function buildPagesIndex() {
         isFatihaPage: true
     });
     
-    const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE;
-    
+    // ===== باقي الصفحات (حسب عدد الكلمات) =====
     let pageStart = fatihaEnd;
     let currentWords = 0;
     let currentSurahCount = 0;
@@ -245,19 +244,12 @@ function buildPagesIndex() {
         const ayahWords = getWordCount(ayah.text);
         
         const isNewSurah = ayah.surah !== lastSurah;
-        
         const wouldExceedSurahLimit = isNewSurah && (currentSurahCount + 1) > MAX_SURAHS_PER_PAGE;
+        const wouldExceedWords = (currentWords + ayahWords) > WORDS_PER_PAGE;
         
-        const isLastAyahOfSurah = (i === quranData.length - 1) || 
-                                  (quranData[i + 1].surah !== ayah.surah);
+        const shouldBreak = (wouldExceedSurahLimit || wouldExceedWords) && i > pageStart;
         
-        const wouldExceedWords = (currentWords + ayahWords) > maxWordsPerPage;
-        
-        const shouldBreakForSurahLimit = wouldExceedSurahLimit;
-        const shouldBreakForWords = wouldExceedWords && 
-                                     (isLastAyahOfSurah || currentWords > maxWordsPerPage * 0.85);
-        
-        if ((shouldBreakForSurahLimit || shouldBreakForWords) && i > pageStart) {
+        if (shouldBreak) {
             pagesIndex.push({
                 start: pageStart,
                 end: i
@@ -284,7 +276,7 @@ function buildPagesIndex() {
     }
     
     totalPages = pagesIndex.length;
-    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة (بحجم خط ثابت)');
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -384,15 +376,6 @@ async function loadQuran() {
 
 // ===== تحميل الإعدادات =====
 function loadSettings() {
-    // تجاهل حجم الخط المحفوظ لأننا زدناه درجتين
-    // const savedFontSize = localStorage.getItem('quranFontSize');
-    // if (savedFontSize) {
-    //     currentFontSize = parseFloat(savedFontSize);
-    // }
-    
-    // حفظ الحجم الجديد
-    localStorage.setItem('quranFontSize', currentFontSize.toString());
-    
     const savedProgress = localStorage.getItem('quranProgress');
     if (savedProgress) {
         const progress = JSON.parse(savedProgress);
@@ -499,6 +482,8 @@ function initializeUI() {
     document.getElementById('backFromDedication').addEventListener('click', hideDedicationPage);
     
     document.addEventListener('keydown', handleKeyboardShortcuts);
+    
+    applyFixedFontSize();
     
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         console.log('التطبيق جاهز للعمل Offline');
@@ -680,62 +665,17 @@ function updatePageNumber(pageNumber) {
     pageNumberElement.textContent = convertToArabicNumbers(pageNumber);
 }
 
-// ===== ضبط تلقائي ذكي =====
-function autoFitContent() {
+// ===== تطبيق حجم خط ثابت (لا يتغير بين الصفحات) =====
+function applyFixedFontSize() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
     
-    const baseSize = window.innerWidth < 480 ? 16 : 20;
-    const baseFontSize = baseSize * currentFontSize;
+    const isMobile = window.innerWidth < 768;
+    const baseSize = isMobile ? FIXED_FONT_SIZE_MOBILE : FIXED_FONT_SIZE_DESKTOP;
+    const finalSize = baseSize * currentFontSize;
     
-    content.style.fontSize = baseFontSize + 'px';
+    content.style.fontSize = finalSize + 'px';
     content.style.lineHeight = '2.1';
-    
-    autoScaleActive = false;
-    
-    requestAnimationFrame(() => {
-        let availableHeight = content.clientHeight;
-        let contentHeight = content.scrollHeight;
-        
-        if (contentHeight > availableHeight) {
-            let scale = 1;
-            const minScale = 0.55;
-            const step = 0.02;
-            
-            while (scale > minScale) {
-                scale -= step;
-                content.style.fontSize = (baseFontSize * scale) + 'px';
-                
-                contentHeight = content.scrollHeight;
-                if (contentHeight <= availableHeight) {
-                    break;
-                }
-            }
-            
-            autoScaleActive = scale < 1;
-        }
-        else {
-            let scale = 1;
-            const maxScale = 5.0;
-            const step = 0.02;
-            
-            while (scale < maxScale) {
-                const nextScale = scale + step;
-                content.style.fontSize = (baseFontSize * nextScale) + 'px';
-                
-                contentHeight = content.scrollHeight;
-                
-                if (contentHeight > availableHeight) {
-                    content.style.fontSize = (baseFontSize * scale) + 'px';
-                    break;
-                }
-                
-                scale = nextScale;
-            }
-            
-            autoScaleActive = scale > 1;
-        }
-    });
 }
 
 // ===== عرض الصفحة =====
@@ -748,6 +688,9 @@ function displayPage(pageNumber) {
     
     const content = document.getElementById('mushafContent');
     content.innerHTML = '';
+    
+    // تطبيق حجم الخط الثابت قبل إضافة المحتوى
+    applyFixedFontSize();
     
     if (pageAyahs.length === 0) {
         content.innerHTML = '<div style="text-align:center;color:#888;font-size:1.1rem;">نهاية المصحف</div>';
@@ -796,10 +739,6 @@ function displayPage(pageNumber) {
             content.appendChild(spacer);
         }
     });
-    
-    setTimeout(() => {
-        autoFitContent();
-    }, 30);
     
     if (pageAyahs.length > 0) {
         saveProgress(pageAyahs[0]);
@@ -868,12 +807,7 @@ function convertToArabicNumbers(number) {
 
 // ===== تطبيق حجم الخط =====
 function applyFontSize() {
-    const content = document.getElementById('mushafContent');
-    if (content) {
-        const baseSize = window.innerWidth < 480 ? 16 : 20;
-        content.style.fontSize = (baseSize * currentFontSize) + 'px';
-        content.style.lineHeight = (2.1 * currentFontSize).toFixed(2);
-    }
+    applyFixedFontSize();
 }
 
 // ===== عرض الفهرس =====
