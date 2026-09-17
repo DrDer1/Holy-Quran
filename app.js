@@ -17,7 +17,9 @@ let pagesIndex = [];
 let db = null;
 
 // ===== إعدادات بناء الصفحات =====
-const CHARS_PER_PAGE = 1000;
+const WORDS_PER_LINE = 10;      // الحد الأقصى للكلمات في السطر
+const MAX_LINES_PER_PAGE = 15;  // الحد الأقصى للأسطر في الصفحة
+const TARGET_TOTAL_PAGES = 604; // الهدف النهائي لعدد الصفحات
 const MIN_SURAH_CHARS = 500;
 
 // ===== إعدادات IndexedDB =====
@@ -207,38 +209,42 @@ function getSurahName(surahNumber) {
     return fallback ? fallback.name : '';
 }
 
-// ===== حساب وزن النص =====
-function getTextWeight(text) {
+// ===== حساب عدد الكلمات في نص =====
+function getWordCount(text) {
     if (!text) return 0;
-    const cleaned = text
-        .replace(/[\u064B-\u065F\u0670]/g, '')
-        .replace(/[\u06D6-\u06ED]/g, '')
-        .trim();
-    return cleaned.length;
+    return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
-// ===== بناء فهرس الصفحات الذكي =====
+// ===== بناء فهرس الصفحات (10 كلمات لكل سطر، 15 سطر لكل صفحة) =====
 function buildPagesIndex() {
     pagesIndex = [];
     
     if (quranData.length === 0) {
-        pagesIndex.push({ start: 0, end: 0 });
+        pagesIndex.push({ start: 0, end: 0, ayahLines: [] });
         totalPages = 1;
         return;
     }
     
+    // الحد الأقصى للكلمات في الصفحة
+    const maxWordsPerPage = WORDS_PER_LINE * MAX_LINES_PER_PAGE; // 150 كلمة
+    
     let pageStart = 0;
-    let currentChars = 0;
+    let currentWords = 0;
     
     for (let i = 0; i < quranData.length; i++) {
         const ayah = quranData[i];
-        const ayahWeight = getTextWeight(ayah.text);
+        const ayahWords = getWordCount(ayah.text);
         
+        // التحقق من نهاية السورة
         const isLastAyahOfSurah = (i === quranData.length - 1) || 
                                   (quranData[i + 1].surah !== ayah.surah);
         
-        const shouldBreakHere = (currentChars + ayahWeight > CHARS_PER_PAGE) && 
-                                 (isLastAyahOfSurah || currentChars > CHARS_PER_PAGE * 1.3);
+        // شروط قطع الصفحة:
+        // 1. تجاوزنا الحد الأقصى للكلمات
+        // 2. ونحن في نهاية سورة، أو تجاوزنا الحد بكثير
+        const willExceed = (currentWords + ayahWords) > maxWordsPerPage;
+        const shouldBreakHere = willExceed && 
+                                 (isLastAyahOfSurah || currentWords > maxWordsPerPage * 0.85);
         
         if (shouldBreakHere && i > pageStart) {
             pagesIndex.push({
@@ -247,12 +253,13 @@ function buildPagesIndex() {
             });
             
             pageStart = i;
-            currentChars = ayahWeight;
+            currentWords = ayahWords;
         } else {
-            currentChars += ayahWeight;
+            currentWords += ayahWords;
         }
     }
     
+    // إضافة الصفحة الأخيرة
     if (pageStart < quranData.length) {
         pagesIndex.push({
             start: pageStart,
@@ -262,6 +269,14 @@ function buildPagesIndex() {
     
     totalPages = pagesIndex.length;
     console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
+    
+    // ضبط دقيق: إذا تجاوزنا 604 صفحة بكثير، نحتاج لزيادة الكلمات لكل صفحة
+    // إذا كان العدد أقل بكثير من 604، نقلل
+    if (totalPages > TARGET_TOTAL_PAGES * 1.15) {
+        console.warn('عدد الصفحات أكثر من المتوقع:', totalPages);
+    } else if (totalPages < TARGET_TOTAL_PAGES * 0.85) {
+        console.warn('عدد الصفحات أقل من المتوقع:', totalPages);
+    }
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -300,7 +315,8 @@ function processQuranData(data) {
                 surah: surah.id,
                 ayah: ayah.id,
                 text: ayah.text.trim(),
-                normalizedText: normalizeArabic(ayah.text)
+                normalizedText: normalizeArabic(ayah.text),
+                wordCount: getWordCount(ayah.text)
             });
         });
     });
@@ -662,7 +678,6 @@ function autoFitContent() {
     const baseFontSize = baseSize * currentFontSize;
     const baseLineHeight = 2.1;
     
-    // إعادة تعيين الحجم
     content.style.fontSize = baseFontSize + 'px';
     content.style.lineHeight = baseLineHeight;
     
@@ -672,7 +687,6 @@ function autoFitContent() {
         let contentHeight = content.scrollHeight;
         let availableHeight = content.clientHeight;
         
-        // الحالة 1: المحتوى أطول من المتاح → تصغير
         if (contentHeight > availableHeight) {
             let scale = 1;
             const minScale = 0.6;
@@ -690,10 +704,9 @@ function autoFitContent() {
             
             autoScaleActive = scale < 1;
         }
-        // الحالة 2: المحتوى أقصر من المتاح → تكبير لملء الصفحة
         else if (contentHeight < availableHeight * 0.92) {
             let scale = 1;
-            const maxScale = 1.6; // الحد الأقصى للتكبير التلقائي
+            const maxScale = 1.6;
             const step = 0.02;
             
             while (scale < maxScale) {
@@ -702,7 +715,6 @@ function autoFitContent() {
                 
                 const newHeight = content.scrollHeight;
                 if (newHeight > availableHeight) {
-                    // تجاوزنا الحد، نرجع للخطوة السابقة
                     content.style.fontSize = (baseFontSize * scale) + 'px';
                     break;
                 }
