@@ -286,7 +286,7 @@ function buildPagesIndex() {
     }
     
     totalPages = pagesIndex.length;
-    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة (وزن:', TARGET_WEIGHT, ')');
+    console.log('تم بناء فهرس الصفحات:', totalPages, 'صفحة');
 }
 
 // ===== الحصول على الآيات في صفحة معينة =====
@@ -675,11 +675,9 @@ function updatePageNumber(pageNumber) {
 }
 
 // ===== ضبط حجم الخط ليناسب الصفحة تماماً =====
-function autoFitFontSize() {
+function autoFitContent() {
     const content = document.getElementById('mushafContent');
-    const clip = document.querySelector('.mushaf-content-clip');
-    
-    if (!content || !clip) return;
+    if (!content) return;
     
     const isMobile = window.innerWidth < 768;
     const baseSize = isMobile ? FIXED_FONT_SIZE_MOBILE : FIXED_FONT_SIZE_DESKTOP;
@@ -689,53 +687,76 @@ function autoFitFontSize() {
     content.style.fontSize = currentSize + 'px';
     content.style.lineHeight = '1.65';
     
-    // الحصول على الارتفاع المتاح
-    const availableHeight = clip.clientHeight;
-    const availableWidth = clip.clientWidth;
+    // إعادة تعيين السماح بالتوزيع
+    content.style.justifyContent = 'flex-start';
     
-    // إعادة قياس المحتوى
+    // الحصول على المساحة المتاحة
+    const availableHeight = content.clientHeight;
+    const availableWidth = content.clientWidth;
+    
+    // قياس المحتوى
     let contentHeight = content.scrollHeight;
     let contentWidth = content.scrollWidth;
     
-    // إذا كان المحتوى يتجاوز، نصغّر تدريجياً
-    let attempts = 0;
-    const maxAttempts = 50;
-    const minSize = 10;
-    
-    while ((contentHeight > availableHeight || contentWidth > availableWidth) && attempts < maxAttempts && currentSize > minSize) {
-        currentSize -= 0.5;
-        content.style.fontSize = currentSize + 'px';
+    // ===== الحالة 1: المحتوى أطول من المتاح → تصغير =====
+    if (contentHeight > availableHeight || contentWidth > availableWidth) {
+        let attempts = 0;
+        const maxAttempts = 50;
+        const minSize = 10;
         
-        contentHeight = content.scrollHeight;
-        contentWidth = content.scrollWidth;
-        attempts++;
-    }
-    
-    // إذا كان المحتوى أصغر بكثير، نكبر تدريجياً (فقط إذا كنا لا نتجاوز)
-    const targetHeight = availableHeight * 0.98;
-    attempts = 0;
-    const maxSize = baseSize * 2.5;
-    
-    while (contentHeight < targetHeight && currentSize < maxSize && attempts < maxAttempts) {
-        const nextSize = currentSize + 0.5;
-        content.style.fontSize = nextSize + 'px';
-        
-        const newHeight = content.scrollHeight;
-        const newWidth = content.scrollWidth;
-        
-        if (newHeight > availableHeight || newWidth > availableWidth) {
-            // تجاوزنا، نرجع
+        while ((contentHeight > availableHeight || contentWidth > availableWidth) && 
+               attempts < maxAttempts && 
+               currentSize > minSize) {
+            currentSize -= 0.5;
             content.style.fontSize = currentSize + 'px';
-            break;
+            
+            contentHeight = content.scrollHeight;
+            contentWidth = content.scrollWidth;
+            attempts++;
+        }
+    }
+    // ===== الحالة 2: المحتوى أقصر من المتاح بكثير → تكبير =====
+    else if (contentHeight < availableHeight * 0.75) {
+        let attempts = 0;
+        const maxAttempts = 100;
+        const maxSize = baseSize * 3.5;
+        const targetHeight = availableHeight * 0.98;
+        
+        while (contentHeight < targetHeight && 
+               currentSize < maxSize && 
+               attempts < maxAttempts) {
+            
+            const nextSize = currentSize + 0.5;
+            content.style.fontSize = nextSize + 'px';
+            
+            const newHeight = content.scrollHeight;
+            const newWidth = content.scrollWidth;
+            
+            if (newHeight > availableHeight || newWidth > availableWidth) {
+                // تجاوزنا، نرجع للحجم السابق
+                content.style.fontSize = currentSize + 'px';
+                break;
+            }
+            
+            currentSize = nextSize;
+            contentHeight = newHeight;
+            contentWidth = newWidth;
+            attempts++;
         }
         
-        currentSize = nextSize;
-        contentHeight = newHeight;
-        contentWidth = newWidth;
-        attempts++;
+        // بعد التكبير، إذا كان المحتوى ما زال أقل من 75%، وزّعه على كامل الصفحة
+        const finalHeight = content.scrollHeight;
+        if (finalHeight < availableHeight * 0.85) {
+            content.style.justifyContent = 'space-between';
+        }
+    }
+    // ===== الحالة 3: المحتوى ملائم تماماً =====
+    else {
+        // المحتوى يتراوح بين 75% و 100% من المساحة → لا تغيير
+        // نترك المساحة الفائضة في الأسفل (طبيعي)
     }
     
-    console.log(`حجم الخط: ${currentSize}px | الارتفاع: ${contentHeight}/${availableHeight}`);
+    console.log(`حجم الخط: ${currentSize}px | الارتفاع: ${contentHeight}/${availableHeight} | التوزيع: ${content.style.justifyContent}`);
 }
 
 // ===== عرض الصفحة =====
@@ -797,9 +818,9 @@ function displayPage(pageNumber) {
         }
     });
     
-    // ضبط حجم الخط تلقائياً لملء الصفحة
+    // ضبط حجم الخط والتوزيع تلقائياً
     requestAnimationFrame(() => {
-        autoFitFontSize();
+        autoFitContent();
     });
     
     if (pageAyahs.length > 0) {
