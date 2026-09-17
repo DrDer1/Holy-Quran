@@ -12,6 +12,7 @@ let isFirstLaunch = false;
 let isShowingOpening = true;
 let quranData = [];
 let surahList = [];
+let autoScaleActive = false;
 
 // ===== نص الإهداء =====
 const DEDICATION_TEXT = `
@@ -40,6 +41,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeUI();
     determineInitialView();
     setupSwipeGestures();
+    
+    // إعادة تطبيق حجم الخط عند تغيير حجم النافذة
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (!isShowingOpening) {
+                applyFontSize();
+                autoFitContent();
+            }
+        }, 200);
+    });
 });
 
 // ===== إخفاء شاشة التحميل =====
@@ -230,12 +243,14 @@ function initializeUI() {
     document.getElementById('fontPlus').addEventListener('click', () => {
         currentFontSize = Math.min(currentFontSize + 0.1, 1.8);
         applyFontSize();
+        autoFitContent();
         saveFontSize();
     });
     
     document.getElementById('fontMinus').addEventListener('click', () => {
         currentFontSize = Math.max(currentFontSize - 0.1, 0.6);
         applyFontSize();
+        autoFitContent();
         saveFontSize();
     });
     
@@ -421,11 +436,8 @@ function isContinuationFromPreviousPage(pageNumber) {
     const currentFirstSurah = getFirstSurahOfPage(pageNumber);
     
     if (previousLastSurah === null || currentFirstSurah === null) return false;
-    
-    // إذا كانت السورة نفسها، فهي تكملة
     if (previousLastSurah !== currentFirstSurah) return false;
     
-    // التحقق من أن أول آية في الصفحة ليست الآية 1 (بداية السورة)
     const ayahsPerPage = 15;
     const startIndex = (pageNumber - 1) * ayahsPerPage;
     const firstAyah = quranData[startIndex];
@@ -444,8 +456,64 @@ function willContinueToNextPage(pageNumber) {
     const lastAyah = quranData[endIndex - 1];
     const nextAyah = quranData[endIndex];
     
-    // إذا كانت السورة نفسها، فهي ستُكمل
     return lastAyah.surah === nextAyah.surah;
+}
+
+// ===== ضبط تلقائي لحجم الخط ليناسب الصفحة =====
+function autoFitContent() {
+    const content = document.getElementById('mushafContent');
+    if (!content) return;
+    
+    // إعادة تعيين الحجم الأساسي أولاً
+    const baseSize = window.innerWidth < 480 ? 14 : 18;
+    const baseFontSize = baseSize * currentFontSize;
+    const baseLineHeight = 2.1;
+    
+    content.style.fontSize = baseFontSize + 'px';
+    content.style.lineHeight = baseLineHeight;
+    
+    // إزالة مؤشر الضبط التلقائي السابق إن وجد
+    const existingIndicator = content.querySelector('.auto-scale-indicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    autoScaleActive = false;
+    
+    // قياس المحتوى بعد الرسم
+    requestAnimationFrame(() => {
+        const contentHeight = content.scrollHeight;
+        const availableHeight = content.clientHeight;
+        
+        // إذا كان المحتوى يتجاوز المتاح
+        if (contentHeight > availableHeight) {
+            let scale = 1;
+            const minScale = 0.65;
+            const step = 0.03;
+            
+            // تصغير تدريجي حتى يتناسب
+            while (scale > minScale) {
+                scale -= step;
+                content.style.fontSize = (baseFontSize * scale) + 'px';
+                
+                // إعادة قياس
+                const newHeight = content.scrollHeight;
+                if (newHeight <= availableHeight) {
+                    break;
+                }
+            }
+            
+            autoScaleActive = scale < 1;
+            
+            // عرض مؤشر إذا تم التصغير
+            if (autoScaleActive) {
+                const indicator = document.createElement('div');
+                indicator.className = 'auto-scale-indicator';
+                indicator.textContent = `تم تصغير الخط تلقائياً ×${scale.toFixed(2)}`;
+                content.insertBefore(indicator, content.firstChild);
+            }
+        }
+    });
 }
 
 // ===== عرض الصفحة =====
@@ -475,7 +543,6 @@ function displayPage(pageNumber) {
     const previousPageLastSurah = getLastSurahOfPage(pageNumber - 1);
     const isContinuation = isContinuationFromPreviousPage(pageNumber);
     
-    // عرض مؤشر التكملة في أعلى الصفحة
     if (isContinuation) {
         const continuationIndicator = document.createElement('div');
         continuationIndicator.className = 'continuation-indicator';
@@ -500,9 +567,7 @@ function displayPage(pageNumber) {
         const isNewSurah = (previousPageLastSurah === null || surahNum !== previousPageLastSurah);
         const isFirstAyahOfSurah = surahAyahs[0].ayah === 1;
         
-        // عرض رأس السورة فقط إذا كانت سورة جديدة أو بداية فعلية
         if (isNewSurah || isFirstAyahOfSurah) {
-            // لا نعرض رأس السورة إذا كانت تكملة (لأن المؤشر يظهرها)
             if (!isContinuation || index > 0 || !isFirstAyahOfSurah) {
                 displaySurahHeader(content, surahNum);
             }
@@ -524,13 +589,15 @@ function displayPage(pageNumber) {
         }
     });
     
-    // عرض مؤشر "يتبع..." في أسفل الصفحة
     if (willContinueToNextPage(pageNumber)) {
         const followIndicator = document.createElement('div');
         followIndicator.className = 'follow-indicator';
         followIndicator.textContent = '... يتبع';
         content.appendChild(followIndicator);
     }
+    
+    // ضبط تلقائي لحجم الخط بعد رسم المحتوى
+    autoFitContent();
     
     if (pageAyahs.length > 0) {
         saveProgress(pageAyahs[0]);
