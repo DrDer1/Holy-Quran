@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
             if (!isShowingOpening) {
-                autoFitContent();
+                displayPage(currentPageNumber);
             }
         }, 200);
     });
@@ -650,7 +650,7 @@ function getLastSurahOfPage(pageNumber) {
     return pageAyahs[pageAyahs.length - 1].surah;
 }
 
-// ===== ضبط تلقائي ذكي لحجم الخط (يملأ الصفحة بالكامل) =====
+// ===== ضبط تلقائي ذكي: يملأ الصفحة تماماً + يوزّع الأسطر يميناً ويساراً =====
 function autoFitContent() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
@@ -665,7 +665,6 @@ function autoFitContent() {
     
     autoScaleActive = false;
     
-    // استخدام requestAnimationFrame للتأكد من إعادة الرسم
     requestAnimationFrame(() => {
         let availableHeight = content.clientHeight;
         let contentHeight = content.scrollHeight;
@@ -680,7 +679,6 @@ function autoFitContent() {
                 scale -= step;
                 content.style.fontSize = (baseFontSize * scale) + 'px';
                 
-                // إعادة قياس
                 contentHeight = content.scrollHeight;
                 if (contentHeight <= availableHeight) {
                     break;
@@ -689,20 +687,18 @@ function autoFitContent() {
             
             autoScaleActive = scale < 1;
         }
-        // إذا كان المحتوى أقصر من المتاح → تكبير حتى يمتلئ
+        // إذا كان المحتوى أقصر → تكبير حتى يمتلئ
         else {
             let scale = 1;
-            const maxScale = 3.0; // الحد الأقصى للتكبير (رفعناه كثيراً لملء الصفحة)
+            const maxScale = 3.0;
             const step = 0.02;
             
-            // قياس تدريجي
             while (scale < maxScale) {
                 const nextScale = scale + step;
                 content.style.fontSize = (baseFontSize * nextScale) + 'px';
                 
                 contentHeight = content.scrollHeight;
                 
-                // إذا تجاوزنا الحد، نرجع للخطوة السابقة
                 if (contentHeight > availableHeight) {
                     content.style.fontSize = (baseFontSize * scale) + 'px';
                     break;
@@ -713,6 +709,15 @@ function autoFitContent() {
             
             autoScaleActive = scale > 1;
         }
+        
+        // تطبيق justify على الحاويات بعد تحديد الحجم النهائي
+        requestAnimationFrame(() => {
+            const ayahsContainers = content.querySelectorAll('.ayahs-container');
+            ayahsContainers.forEach(container => {
+                container.style.textAlign = 'justify';
+                container.style.textAlignLast = 'justify';
+            });
+        });
     });
 }
 
@@ -776,7 +781,6 @@ function displayPage(pageNumber) {
     });
     
     // استدعاء الضبط التلقائي بعد إضافة المحتوى
-    // استخدام setTimeout لضمان أن المتصفح قد رسم المحتوى
     setTimeout(() => {
         autoFitContent();
     }, 30);
