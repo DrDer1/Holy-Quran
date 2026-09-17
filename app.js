@@ -356,8 +356,6 @@ function handleSwipe() {
         return;
     }
     
-    // سحب لليسار = الصفحة التالية (منطق عربي صحيح)
-    // سحب لليمين = الصفحة السابقة
     if (swipeDistance < 0) {
         goToNextPage();
     } else {
@@ -645,7 +643,7 @@ function hideDedicationPage() {
     document.getElementById('dedicationPage').classList.add('hidden');
 }
 
-// ===== تنفيذ البحث =====
+// ===== تنفيذ البحث (محدث) =====
 function performSearch() {
     const searchType = document.getElementById('searchType').value;
     const searchText = document.getElementById('searchInput').value.trim();
@@ -659,6 +657,7 @@ function performSearch() {
     }
     
     let results = [];
+    let resultLabel = '';
     
     switch (searchType) {
         case 'text':
@@ -666,18 +665,23 @@ function performSearch() {
             results = quranData.filter(ayah => 
                 ayah.normalizedText.includes(normalizedSearch)
             ).slice(0, 50);
+            resultLabel = `نتائج البحث عن: "${searchText}"`;
             break;
             
         case 'surah':
             const surahNum = parseInt(searchText);
             if (surahNum >= 1 && surahNum <= 114) {
                 results = quranData.filter(ayah => ayah.surah === surahNum);
+                resultLabel = `سُورَةُ ${getSurahName(surahNum)}`;
             }
             break;
             
         case 'ayah':
             const ayahNum = parseInt(searchText);
-            results = quranData.filter(ayah => ayah.ayah === ayahNum).slice(0, 50);
+            if (!isNaN(ayahNum) && ayahNum > 0) {
+                results = quranData.filter(ayah => ayah.ayah === ayahNum);
+                resultLabel = `الآية رقم ${convertToArabicNumbers(ayahNum)} في جميع السور`;
+            }
             break;
             
         case 'juz':
@@ -697,6 +701,7 @@ function performSearch() {
                             )) : quranData.length;
                         
                         results = quranData.slice(startIndex, endIndex);
+                        resultLabel = `الجزء ${convertToArabicNumbers(juzNum)}`;
                     }
                 }
             }
@@ -708,29 +713,67 @@ function performSearch() {
         return;
     }
     
-    results.forEach(ayah => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'search-result-item';
-        
-        const surahName = getSurahName(ayah.surah);
-        
-        resultItem.innerHTML = `
-            <div style="font-weight:bold;color:#00A8D6;margin-bottom:4px;">
-                سورة ${surahName} - آية ${convertToArabicNumbers(ayah.ayah)}
-            </div>
-            <div>${ayah.text}</div>
-        `;
-        
-        resultItem.addEventListener('click', () => {
-            const ayahIndex = quranData.indexOf(ayah);
-            currentPageNumber = Math.floor(ayahIndex / 15) + 1;
-            showMushafPage();
-            displayPage(currentPageNumber);
-            document.getElementById('searchModal').classList.add('hidden');
+    // عرض عدد النتائج
+    const resultCount = document.createElement('div');
+    resultCount.className = 'search-result-count';
+    resultCount.textContent = `${resultLabel} — عدد النتائج: ${convertToArabicNumbers(results.length)}`;
+    resultsContainer.appendChild(resultCount);
+    
+    // تجميع النتائج حسب السورة عند البحث برقم آية
+    if (searchType === 'ayah') {
+        const surahGroups = {};
+        results.forEach(ayah => {
+            if (!surahGroups[ayah.surah]) {
+                surahGroups[ayah.surah] = [];
+            }
+            surahGroups[ayah.surah].push(ayah);
         });
         
-        resultsContainer.appendChild(resultItem);
+        Object.keys(surahGroups).forEach(surahNum => {
+            // عنوان السورة
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'search-result-group-header';
+            groupHeader.textContent = `سُورَةُ ${getSurahName(parseInt(surahNum))}`;
+            resultsContainer.appendChild(groupHeader);
+            
+            // آيات السورة
+            surahGroups[surahNum].forEach(ayah => {
+                const resultItem = createSearchResultItem(ayah);
+                resultsContainer.appendChild(resultItem);
+            });
+        });
+    } else {
+        // عرض عادي
+        results.forEach(ayah => {
+            const resultItem = createSearchResultItem(ayah);
+            resultsContainer.appendChild(resultItem);
+        });
+    }
+}
+
+// ===== إنشاء عنصر نتيجة البحث =====
+function createSearchResultItem(ayah) {
+    const resultItem = document.createElement('div');
+    resultItem.className = 'search-result-item';
+    
+    const surahName = getSurahName(ayah.surah);
+    
+    resultItem.innerHTML = `
+        <div class="search-result-header">
+            سورة ${surahName} - آية ${convertToArabicNumbers(ayah.ayah)}
+        </div>
+        <div class="search-result-text">${ayah.text}</div>
+    `;
+    
+    resultItem.addEventListener('click', () => {
+        const ayahIndex = quranData.indexOf(ayah);
+        currentPageNumber = Math.floor(ayahIndex / 15) + 1;
+        showMushafPage();
+        displayPage(currentPageNumber);
+        document.getElementById('searchModal').classList.add('hidden');
     });
+    
+    return resultItem;
 }
 
 // ===== حفظ التقدم =====
@@ -750,9 +793,8 @@ function saveFontSize() {
     localStorage.setItem('quranFontSize', currentFontSize.toString());
 }
 
-// ===== اختصارات لوحة المفاتيح (محدثة) =====
+// ===== اختصارات لوحة المفاتيح =====
 function handleKeyboardShortcuts(event) {
-    // السهم الأيسر = الصفحة التالية (في RTL يتقدم للأمام)
     if (event.key === 'ArrowLeft') {
         event.preventDefault();
         if (!isShowingOpening) {
@@ -760,7 +802,6 @@ function handleKeyboardShortcuts(event) {
         }
     }
     
-    // السهم الأيمن = الصفحة السابقة (في RTL يعود للخلف)
     if (event.key === 'ArrowRight') {
         event.preventDefault();
         if (isShowingOpening) {
