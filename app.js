@@ -26,32 +26,81 @@ const DEDICATION_TEXT = `
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('تهيئة المصحف...');
     
-    await loadQuran();
+    // إعداد زر إعادة المحاولة
+    document.getElementById('retryButton').addEventListener('click', retryLoad);
+    
+    // محاولة تحميل البيانات
+    const success = await loadQuran();
+    
+    if (!success) {
+        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم. يرجى التحقق من الاتصال بالإنترنت.');
+        return;
+    }
+    
+    // إخفاء شاشة التحميل وإظهار التطبيق
+    hideLoadingScreen();
+    
+    // استعادة الإعدادات
+    loadSettings();
+    
+    // تهيئة الواجهة
+    initializeUI();
+    
+    // تحديد العرض الأولي
+    determineInitialView();
+    
+    // تفعيل السحب
+    setupSwipeGestures();
+});
+
+// ===== إخفاء شاشة التحميل =====
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+    }
+    document.getElementById('appContainer').classList.remove('hidden');
+}
+
+// ===== عرض شاشة الخطأ =====
+function showErrorScreen(message) {
+    document.getElementById('loadingScreen').classList.add('hidden');
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('errorScreen').classList.remove('hidden');
+    document.getElementById('appContainer').classList.add('hidden');
+}
+
+// ===== إعادة المحاولة =====
+async function retryLoad() {
+    document.getElementById('errorScreen').classList.add('hidden');
+    document.getElementById('loadingScreen').classList.remove('hidden');
+    
+    const success = await loadQuran();
+    
+    if (!success) {
+        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم. يرجى التحقق من الاتصال بالإنترنت.');
+        return;
+    }
+    
+    hideLoadingScreen();
     loadSettings();
     initializeUI();
     determineInitialView();
     setupSwipeGestures();
-});
+}
 
 // ===== دالة تطبيع النص العربي =====
 function normalizeArabic(text) {
     if (!text) return '';
     
     return text
-        // إزالة التشكيل (الفتحة، الضمة، الكسرة، السكون، الشدة، التنوين)
         .replace(/[\u064B-\u065F\u0670]/g, '')
-        // إزالة علامات الوقف والرموز القرآنية
         .replace(/[\u06D6-\u06ED\u08F0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g, '')
-        // توحيد الألف (أ، إ، آ، ٱ → ا)
         .replace(/[أإآٱ]/g, 'ا')
-        // توحيد الياء (ى → ي)
         .replace(/ى/g, 'ي')
-        // توحيد التاء المربوطة (ة → ه)
         .replace(/ة/g, 'ه')
-        // توحيد الهمزة على السطر
         .replace(/ؤ/g, 'و')
         .replace(/ئ/g, 'ي')
-        // إزالة المسافات الزائدة
         .replace(/\s+/g, ' ')
         .trim();
 }
@@ -60,7 +109,16 @@ function normalizeArabic(text) {
 async function loadQuran() {
     try {
         const response = await fetch('quran.json');
+        
+        if (!response.ok) {
+            throw new Error('فشل الاتصال بالخادم: ' + response.status);
+        }
+        
         const data = await response.json();
+        
+        if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('بيانات القرآن غير صحيحة');
+        }
         
         quranData = [];
         surahList = [];
@@ -569,7 +627,7 @@ function hideDedicationPage() {
     document.getElementById('dedicationPage').classList.add('hidden');
 }
 
-// ===== تنفيذ البحث (محدث بتطبيع النص) =====
+// ===== تنفيذ البحث =====
 function performSearch() {
     const searchType = document.getElementById('searchType').value;
     const searchText = document.getElementById('searchInput').value.trim();
@@ -586,9 +644,7 @@ function performSearch() {
     
     switch (searchType) {
         case 'text':
-            // تطبيع نص البحث قبل المقارنة
             const normalizedSearch = normalizeArabic(searchText);
-            
             results = quranData.filter(ayah => 
                 ayah.normalizedText.includes(normalizedSearch)
             ).slice(0, 50);
