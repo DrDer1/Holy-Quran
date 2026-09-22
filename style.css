@@ -61,89 +61,6 @@ body {
     display: none !important;
 }
 
-/* ===== شاشة التحميل ===== */
-.loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.loading-frame {
-    width: min(85%, 400px);
-    aspect-ratio: 9 / 16;
-    max-height: 90vh;
-    background: #000000;
-    border: 1px solid #555555;
-    border-radius: 2px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 
-        0 0 0 3px #0a0a0a,
-        0 0 0 4px #444444,
-        0 0 0 7px #0a0a0a,
-        0 0 0 8px #333333,
-        0 20px 60px rgba(0,0,0,0.9);
-}
-
-.loading-ornament-top,
-.loading-ornament-bottom {
-    color: #999999;
-    font-size: 32px;
-    flex-shrink: 0;
-    padding: 15px 0;
-}
-
-.loading-content {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 25px;
-    padding: 20px;
-}
-
-.loading-spinner {
-    width: 60px;
-    height: 60px;
-    border: 3px solid #222222;
-    border-top: 3px solid #c0c0c0;
-    border-radius: 50%;
-    animation: spin 1.2s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-    font-size: clamp(16px, 4vw, 22px);
-    color: #f0f0f0;
-    text-align: center;
-    font-family: 'UthmanicHafs', serif;
-    letter-spacing: 0.5px;
-}
-
-.loading-subtext {
-    font-size: clamp(12px, 3vw, 15px);
-    color: #888888;
-    text-align: center;
-    font-family: 'UthmanicHafs', serif;
-}
-
 /* ===== شاشة الخطأ ===== */
 .error-screen {
     position: fixed;
@@ -430,7 +347,6 @@ body {
     border-color: #00A8D6;
 }
 
-/* ===== زر تحديث التطبيق ===== */
 .update-app-btn {
     border-color: #26b3a6;
     color: #f0f0f0;
@@ -473,16 +389,6 @@ body {
     cursor: grabbing;
 }
 
-/* ===== الصفحة الافتتاحية ===== */
-.opening-page {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    padding: 0;
-}
-
 /* ===== صفحة المصحف ===== */
 .mushaf-page {
     width: 100%;
@@ -521,7 +427,7 @@ body {
     display: block;
 }
 
-/* ===== غلاف المحتوى (يقص أي فائض خارج الإطار) ===== */
+/* ===== غلاف المحتوى ===== */
 .mushaf-content-clip {
     position: absolute;
     top: 3.5%;
@@ -535,64 +441,76 @@ body {
     justify-content: stretch;
 }
 
-/* ===== منطقة المحتوى - محصورة داخل الإطار ===== */
+/* ===== منطقة المحتوى - ممتلئة بالكامل ===== */
 .mushaf-content {
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
     text-align: justify;
-    font-size: clamp(14px, 3vw, 20px);
-    line-height: 1.65;
+    text-align-last: right;
+    -webkit-text-align-last: right;
+    -moz-text-align-last: right;
+    font-size: 15px;
+    line-height: 1.75;
     color: #f0f0f0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
     font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', 'Amiri', serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
 }
 
-/* ===== محتوى الصفحة الافتتاحية (في المنتصف) ===== */
-.opening-content-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    padding: 3.5% 3.5% 6% 3.5%;
-    overflow: hidden;
+/* ===== حاوية الآيات - ممتلئة بالكامل عمودياً ===== */
+.ayahs-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    line-height: 1.6;
+    justify-content: space-between;
+    flex: 1;
+    text-align: justify;
+    text-align-last: right;
+    -webkit-text-align-last: right;
+    -moz-text-align-last: right;
+    line-height: inherit;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
+    word-spacing: 0.25em;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
+    direction: rtl;
+    width: 100%;
+    margin-bottom: 4px;
 }
 
-.opening-title {
-    font-size: clamp(36px, 9vw, 68px);
-    color: #d4af37;
+.ayah-text {
+    display: inline;
+    color: #f0f0f0;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
+    unicode-bidi: embed;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* ===== رقم الآية ===== */
+.ayah-number {
+    display: inline;
+    margin: 0 4px;
+    color: #f5e6b3;
+    font-size: inherit;
     font-weight: bold;
-    letter-spacing: 6px;
-    text-align: center;
-    line-height: 1.6;
-    font-family: 'UthmanicHafs', 'Amiri Quran', serif;
-    text-shadow: 
-        0 0 20px rgba(212, 175, 55, 0.35),
-        0 0 40px rgba(212, 175, 55, 0.15);
-    padding: 20px;
-    position: relative;
-}
-
-.opening-title::before,
-.opening-title::after {
-    content: '❁';
-    display: block;
-    color: #d4af37;
-    font-size: 0.5em;
-    letter-spacing: 0;
-    margin: 20px auto;
-    opacity: 0.75;
+    vertical-align: baseline;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== زخرفة رقم الصفحة ===== */
@@ -643,10 +561,10 @@ body {
 /* ===== عنوان السورة ===== */
 .surah-header {
     color: #d4af37;
-    font-size: clamp(18px, 4vw, 26px);
+    font-size: 17px;
     font-weight: bold;
-    margin: 10px 0 8px;
-    padding: 10px 14px;
+    margin: 8px 0 6px;
+    padding: 8px 12px;
     border: 1px solid #b8860b;
     border-radius: 6px;
     background: #0a0a0a;
@@ -680,8 +598,8 @@ body {
 
 .surah-bismillah {
     color: #00A8D6;
-    font-size: clamp(16px, 3.5vw, 22px);
-    margin: 8px 0 12px;
+    font-size: 15px;
+    margin: 6px 0 10px;
     font-weight: bold;
     text-align: center;
     flex-shrink: 0;
@@ -689,53 +607,6 @@ body {
     font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
-
-/* ===== الآيات ===== */
-.ayahs-container {
-    display: block;
-    text-align: justify;
-    text-align-last: right;
-    -webkit-text-align-last: right;
-    -moz-text-align-last: right;
-    line-height: inherit;
-    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
-    word-spacing: 0.35em;
-    letter-spacing: 0.02em;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-feature-settings: "kern" 1, "liga" 1;
-    direction: rtl;
-    width: 100%;
-    margin-bottom: 4px;
-}
-
-.ayah-text {
-    display: inline;
-    color: #f0f0f0;
-    font-size: inherit;
-    line-height: inherit;
-    font-family: 'UthmanicHafs', 'Amiri Quran', 'Scheherazade New', serif;
-    unicode-bidi: embed;
-    direction: rtl;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-}
-
-/* ===== رقم الآية ===== */
-.ayah-number {
-    display: inline;
-    margin: 0 4px;
-    color: #f5e6b3;
-    font-size: inherit;
-    font-weight: bold;
-    vertical-align: baseline;
-    background: transparent;
-    border: none;
-    padding: 0;
-    font-family: 'UthmanicHafs', serif;
 }
 
 /* ===== صفحة الإهداء ===== */
@@ -773,7 +644,7 @@ body {
 }
 
 .dedication-title {
-    font-size: clamp(28px, 6vw, 42px);
+    font-size: 32px;
     color: #d4af37;
     font-weight: bold;
     letter-spacing: 3px;
@@ -787,7 +658,7 @@ body {
     flex-direction: column;
     justify-content: center;
     gap: 14px;
-    font-size: clamp(16px, 3.5vw, 22px);
+    font-size: 18px;
     color: #d0d0d0;
     line-height: 1.9;
     max-width: 400px;
@@ -989,20 +860,6 @@ body {
     margin-bottom: 6px;
 }
 
-.search-result-group-header {
-    background: #1a1a1a;
-    border: 1px solid #444444;
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: #f0f0f0;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-    font-family: 'UthmanicHafs', serif;
-    margin-top: 10px;
-    margin-bottom: 4px;
-}
-
 .search-result-item {
     padding: 10px 12px;
     margin: 2px 0;
@@ -1071,33 +928,15 @@ body {
 }
 
 @keyframes pageTurnNext {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    50% {
-        transform: translateX(-25px);
-        opacity: 0.3;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+    from { transform: translateX(0); opacity: 1; }
+    50% { transform: translateX(-25px); opacity: 0.3; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes pageTurnPrev {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    50% {
-        transform: translateX(25px);
-        opacity: 0.3;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+    from { transform: translateX(0); opacity: 1; }
+    50% { transform: translateX(25px); opacity: 0.3; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 /* ===== تصميم متجاوب ===== */
@@ -1127,25 +966,19 @@ body {
         padding: 2px;
     }
     
-    .mushaf-content-clip {
-        top: 3.5%;
-        left: 3.5%;
-        right: 3.5%;
-        bottom: 6%;
-    }
-    
     .mushaf-content {
-        font-size: clamp(13px, 2.8vw, 17px);
-        line-height: 1.6;
+        font-size: 14px;
+        line-height: 1.7;
     }
     
-    .opening-content-inner {
-        padding: 3.5% 3.5% 6% 3.5%;
+    .surah-header {
+        font-size: 15px;
+        padding: 6px 10px;
+        margin: 6px 0 5px;
     }
     
-    .opening-title {
-        font-size: clamp(30px, 8vw, 48px);
-        letter-spacing: 4px;
+    .surah-bismillah {
+        font-size: 13px;
     }
     
     .page-number-ornament {
@@ -1158,38 +991,12 @@ body {
         font-size: clamp(12px, 2.8vw, 15px);
     }
     
-    .surah-header {
-        font-size: clamp(15px, 3.4vw, 19px);
-        padding: 7px 10px;
-        margin: 7px 0 5px;
-    }
-    
-    .surah-bismillah {
-        font-size: clamp(13px, 2.9vw, 17px);
-    }
-    
     .ayah-number {
         margin: 0 3px;
     }
     
-    .loading-frame,
     .error-frame {
         width: min(88%, 360px);
-    }
-    
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .search-result-count {
-        font-size: 13px;
-        padding: 8px 10px;
-    }
-    
-    .search-result-group-header {
-        font-size: 15px;
-        padding: 8px 10px;
     }
 }
 
@@ -1225,25 +1032,19 @@ body {
         max-width: 100%;
     }
     
-    .mushaf-content-clip {
-        top: 3.5%;
-        left: 3.5%;
-        right: 3.5%;
-        bottom: 6%;
-    }
-    
     .mushaf-content {
-        font-size: clamp(12px, 1.6vw, 15px);
-        line-height: 1.55;
+        font-size: 13px;
+        line-height: 1.65;
     }
     
-    .opening-content-inner {
-        padding: 3.5% 3.5% 6% 3.5%;
+    .surah-header {
+        font-size: 14px;
+        padding: 5px 10px;
+        margin: 5px 0 4px;
     }
     
-    .opening-title {
-        font-size: clamp(28px, 5vw, 42px);
-        letter-spacing: 3px;
+    .surah-bismillah {
+        font-size: 12px;
     }
     
     .page-number-ornament {
@@ -1254,16 +1055,6 @@ body {
     
     .page-number-ornament span {
         font-size: clamp(11px, 1.6vw, 14px);
-    }
-    
-    .surah-header {
-        font-size: clamp(14px, 2vw, 18px);
-        padding: 6px 10px;
-        margin: 6px 0 5px;
-    }
-    
-    .surah-bismillah {
-        font-size: clamp(12px, 1.8vw, 16px);
     }
 }
 
@@ -1276,25 +1067,19 @@ body {
         max-width: 100%;
     }
     
-    .mushaf-content-clip {
-        top: 3.5%;
-        left: 3.5%;
-        right: 3.5%;
-        bottom: 6%;
-    }
-    
     .mushaf-content {
-        font-size: clamp(15px, 1.8vw, 20px);
-        line-height: 1.65;
+        font-size: 17px;
+        line-height: 1.8;
     }
     
-    .opening-content-inner {
-        padding: 3.5% 3.5% 6% 3.5%;
+    .surah-header {
+        font-size: 19px;
+        padding: 10px 14px;
+        margin: 10px 0 8px;
     }
     
-    .opening-title {
-        font-size: clamp(40px, 6vw, 60px);
-        letter-spacing: 5px;
+    .surah-bismillah {
+        font-size: 17px;
     }
     
     .page-number-ornament {
@@ -1329,25 +1114,19 @@ body {
         max-height: 100%;
     }
     
-    .mushaf-content-clip {
-        top: 3.5%;
-        left: 3.5%;
-        right: 3.5%;
-        bottom: 6%;
-    }
-    
     .mushaf-content {
-        font-size: clamp(16px, 1.3vw, 22px);
-        line-height: 1.7;
+        font-size: 18px;
+        line-height: 1.85;
     }
     
-    .opening-content-inner {
-        padding: 3.5% 3.5% 6% 3.5%;
+    .surah-header {
+        font-size: 22px;
+        padding: 12px 16px;
+        margin: 12px 0 10px;
     }
     
-    .opening-title {
-        font-size: clamp(48px, 5vw, 72px);
-        letter-spacing: 8px;
+    .surah-bismillah {
+        font-size: 20px;
     }
     
     .page-number-ornament {
