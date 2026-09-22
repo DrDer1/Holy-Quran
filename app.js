@@ -35,7 +35,7 @@ const DEDICATION_TEXT = `
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('تهيئة المصحف...');
     
-    // إظهار التطبيق مباشرة أولاً
+    // ===== إظهار التطبيق مباشرة =====
     const appContainer = document.getElementById('appContainer');
     if (appContainer) {
         appContainer.classList.remove('hidden');
@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         retryBtn.addEventListener('click', retryLoad);
     }
     
+    // فتح قاعدة البيانات
     try {
         db = await openDatabase();
     } catch (error) {
@@ -62,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const success = await loadQuranData();
     
     if (!success) {
-        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم.');
+        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم. تأكد من وجود ملف quran.json.');
         return;
     }
     
@@ -185,7 +186,7 @@ async function retryLoad() {
     const success = await loadQuranData();
     
     if (!success) {
-        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم.');
+        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم. تأكد من وجود ملف quran.json.');
         return;
     }
     
@@ -207,6 +208,7 @@ async function loadQuranData() {
     try {
         let data = null;
         
+        // محاولة القراءة من IndexedDB
         try {
             data = await getQuranFromDB();
             if (data) {
@@ -216,6 +218,7 @@ async function loadQuranData() {
             console.warn('فشل القراءة من IndexedDB:', error);
         }
         
+        // إذا لم توجد، جلبها من الشبكة
         if (!data) {
             console.log('جلب البيانات من الشبكة...');
             const response = await fetch('quran.json');
@@ -238,6 +241,7 @@ async function loadQuranData() {
             throw new Error('بيانات القرآن غير صحيحة');
         }
         
+        // استخراج quranData
         quranData = [];
         data.forEach(surah => {
             surah.verses.forEach(ayah => {
@@ -248,6 +252,9 @@ async function loadQuranData() {
                 });
             });
         });
+        
+        // ===== المشاركة مع quran.js =====
+        window.quranData = quranData;
         
         console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
         return true;
@@ -288,15 +295,23 @@ function getSurahName(surahNumber) {
 function loadSettings() {
     const savedProgress = localStorage.getItem('quranProgress');
     if (savedProgress) {
-        const progress = JSON.parse(savedProgress);
-        currentPageNumber = progress.page || 1;
+        try {
+            const progress = JSON.parse(savedProgress);
+            currentPageNumber = progress.page || 1;
+        } catch (e) {
+            currentPageNumber = 1;
+        }
     } else {
         currentPageNumber = 1;
     }
     
     const savedBookmarks = localStorage.getItem('quranBookmarks');
     if (savedBookmarks) {
-        bookmarks = JSON.parse(savedBookmarks);
+        try {
+            bookmarks = JSON.parse(savedBookmarks);
+        } catch (e) {
+            bookmarks = [];
+        }
     }
 }
 
@@ -429,8 +444,12 @@ async function updateApplication() {
 function goToLastPosition() {
     const savedProgress = localStorage.getItem('quranProgress');
     if (savedProgress) {
-        const progress = JSON.parse(savedProgress);
-        currentPageNumber = progress.page || 1;
+        try {
+            const progress = JSON.parse(savedProgress);
+            currentPageNumber = progress.page || 1;
+        } catch (e) {
+            currentPageNumber = 1;
+        }
     } else {
         currentPageNumber = 1;
     }
