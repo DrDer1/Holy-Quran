@@ -35,7 +35,22 @@ const DEDICATION_TEXT = `
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('تهيئة المصحف...');
     
-    document.getElementById('retryButton').addEventListener('click', retryLoad);
+    // إظهار التطبيق مباشرة أولاً
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) {
+        appContainer.classList.remove('hidden');
+    }
+    
+    const topBar = document.getElementById('topBar');
+    if (topBar) {
+        topBar.classList.remove('hidden');
+    }
+    
+    // ربط زر إعادة المحاولة
+    const retryBtn = document.getElementById('retryButton');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', retryLoad);
+    }
     
     try {
         db = await openDatabase();
@@ -57,16 +72,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // استعادة الإعدادات
     loadSettings();
     
-    // إظهار التطبيق مباشرة (بدون شاشة تحميل)
-    showApp();
-    
     // تهيئة الواجهة
     initializeUI();
     
     // تفعيل السحب
     setupSwipeGestures();
     
-    // عرض الصفحة المطلوبة (آخر موضع أو الصفحة 1)
+    // عرض الصفحة المطلوبة
     displayPage(currentPageNumber);
     
     let resizeTimeout;
@@ -77,12 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 200);
     });
 });
-
-// ===== إظهار التطبيق =====
-function showApp() {
-    document.getElementById('appContainer').classList.remove('hidden');
-    document.getElementById('topBar').classList.remove('hidden');
-}
 
 // ===== فتح قاعدة البيانات =====
 function openDatabase() {
@@ -108,7 +114,7 @@ function openDatabase() {
     });
 }
 
-// ===== حفظ بيانات القرآن =====
+// ===== حفظ البيانات في IndexedDB =====
 function saveQuranToDB(data) {
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -155,14 +161,26 @@ function getQuranFromDB() {
 
 // ===== عرض شاشة الخطأ =====
 function showErrorScreen(message) {
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorScreen').classList.remove('hidden');
-    document.getElementById('appContainer').classList.add('hidden');
+    const errorMsg = document.getElementById('errorMessage');
+    if (errorMsg) {
+        errorMsg.textContent = message;
+    }
+    const errorScreen = document.getElementById('errorScreen');
+    if (errorScreen) {
+        errorScreen.classList.remove('hidden');
+    }
+    const app = document.getElementById('appContainer');
+    if (app) {
+        app.classList.add('hidden');
+    }
 }
 
 // ===== إعادة المحاولة =====
 async function retryLoad() {
-    document.getElementById('errorScreen').classList.add('hidden');
+    const errorScreen = document.getElementById('errorScreen');
+    if (errorScreen) {
+        errorScreen.classList.add('hidden');
+    }
     
     const success = await loadQuranData();
     
@@ -173,7 +191,12 @@ async function retryLoad() {
     
     buildSurahList();
     loadSettings();
-    showApp();
+    
+    const app = document.getElementById('appContainer');
+    if (app) {
+        app.classList.remove('hidden');
+    }
+    
     initializeUI();
     setupSwipeGestures();
     displayPage(currentPageNumber);
@@ -279,36 +302,57 @@ function loadSettings() {
 
 // ===== تهيئة الواجهة =====
 function initializeUI() {
-    document.getElementById('menuToggle').addEventListener('click', openMenu);
-    document.getElementById('closeMenu').addEventListener('click', closeMenu);
-    document.getElementById('sideMenuOverlay').addEventListener('click', closeMenu);
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) menuToggle.addEventListener('click', openMenu);
     
-    document.getElementById('menuQuran').addEventListener('click', () => {
-        closeMenu();
-        goToLastPosition();
-    });
+    const closeMenuBtn = document.getElementById('closeMenu');
+    if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
     
-    document.getElementById('menuIndex').addEventListener('click', () => {
-        closeMenu();
-        showIndexModal();
-    });
+    const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+    if (sideMenuOverlay) sideMenuOverlay.addEventListener('click', closeMenu);
     
-    document.getElementById('menuBookmarks').addEventListener('click', () => {
-        closeMenu();
-        showBookmarksModal();
-    });
+    const menuQuran = document.getElementById('menuQuran');
+    if (menuQuran) {
+        menuQuran.addEventListener('click', () => {
+            closeMenu();
+            goToLastPosition();
+        });
+    }
     
-    document.getElementById('menuDedication').addEventListener('click', () => {
-        closeMenu();
-        showDedicationPage();
-    });
+    const menuIndex = document.getElementById('menuIndex');
+    if (menuIndex) {
+        menuIndex.addEventListener('click', () => {
+            closeMenu();
+            showIndexModal();
+        });
+    }
     
-    document.getElementById('saveBookmarkBtn').addEventListener('click', () => {
-        saveBookmark();
-        closeMenu();
-    });
+    const menuBookmarks = document.getElementById('menuBookmarks');
+    if (menuBookmarks) {
+        menuBookmarks.addEventListener('click', () => {
+            closeMenu();
+            showBookmarksModal();
+        });
+    }
     
-    document.getElementById('searchBtn').addEventListener('click', showSearchModal);
+    const menuDedication = document.getElementById('menuDedication');
+    if (menuDedication) {
+        menuDedication.addEventListener('click', () => {
+            closeMenu();
+            showDedicationPage();
+        });
+    }
+    
+    const saveBookmarkBtn = document.getElementById('saveBookmarkBtn');
+    if (saveBookmarkBtn) {
+        saveBookmarkBtn.addEventListener('click', () => {
+            saveBookmark();
+            closeMenu();
+        });
+    }
+    
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) searchBtn.addEventListener('click', showSearchModal);
     
     const updateBtn = document.getElementById('updateAppBtn');
     if (updateBtn) {
@@ -332,14 +376,20 @@ function initializeUI() {
         });
     });
     
-    document.getElementById('searchExecute').addEventListener('click', performSearch);
-    document.getElementById('searchInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
+    const searchExecute = document.getElementById('searchExecute');
+    if (searchExecute) searchExecute.addEventListener('click', performSearch);
     
-    document.getElementById('backFromDedication').addEventListener('click', hideDedicationPage);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    }
+    
+    const backFromDedication = document.getElementById('backFromDedication');
+    if (backFromDedication) backFromDedication.addEventListener('click', hideDedicationPage);
     
     document.addEventListener('keydown', handleKeyboardShortcuts);
 }
@@ -389,18 +439,23 @@ function goToLastPosition() {
 
 // ===== فتح وإغلاق القائمة =====
 function openMenu() {
-    document.getElementById('sideMenu').classList.add('open');
-    document.getElementById('sideMenuOverlay').classList.add('active');
+    const sideMenu = document.getElementById('sideMenu');
+    if (sideMenu) sideMenu.classList.add('open');
+    const overlay = document.getElementById('sideMenuOverlay');
+    if (overlay) overlay.classList.add('active');
 }
 
 function closeMenu() {
-    document.getElementById('sideMenu').classList.remove('open');
-    document.getElementById('sideMenuOverlay').classList.remove('active');
+    const sideMenu = document.getElementById('sideMenu');
+    if (sideMenu) sideMenu.classList.remove('open');
+    const overlay = document.getElementById('sideMenuOverlay');
+    if (overlay) overlay.classList.remove('active');
 }
 
 // ===== إعداد السحب =====
 function setupSwipeGestures() {
     const page = document.getElementById('quranPage');
+    if (!page) return;
     
     page.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
@@ -465,12 +520,12 @@ function handleSwipe() {
 function goToNextPage() {
     if (currentPageNumber < totalPages) {
         const page = document.getElementById('mushafPage');
-        page.classList.add('page-turning-next');
+        if (page) page.classList.add('page-turning-next');
         
         setTimeout(() => {
             currentPageNumber++;
             displayPage(currentPageNumber);
-            page.classList.remove('page-turning-next');
+            if (page) page.classList.remove('page-turning-next');
         }, 175);
     }
 }
@@ -478,12 +533,12 @@ function goToNextPage() {
 function goToPreviousPage() {
     if (currentPageNumber > 1) {
         const page = document.getElementById('mushafPage');
-        page.classList.add('page-turning-prev');
+        if (page) page.classList.add('page-turning-prev');
         
         setTimeout(() => {
             currentPageNumber--;
             displayPage(currentPageNumber);
-            page.classList.remove('page-turning-prev');
+            if (page) page.classList.remove('page-turning-prev');
         }, 175);
     }
 }
@@ -574,6 +629,7 @@ function displayPage(pageNumber) {
     const pageData = getPageData(pageNumber);
     
     const content = document.getElementById('mushafContent');
+    if (!content) return;
     content.innerHTML = '';
     
     if (!pageVerses || pageVerses.length === 0) {
@@ -672,8 +728,11 @@ function displaySurahHeader(content, surahNumber) {
 // ===== تحديث الشريط العلوي =====
 function updateTopBar() {
     const surahName = getSurahName(currentSurahNumber);
-    document.getElementById('topSurahName').textContent = `سُورَةُ ${surahName}`;
-    document.getElementById('topJuzName').textContent = `الجزء ${convertToArabicNumbers(currentJuzNumber)}`;
+    const topSurahName = document.getElementById('topSurahName');
+    if (topSurahName) topSurahName.textContent = `سُورَةُ ${surahName}`;
+    
+    const topJuzName = document.getElementById('topJuzName');
+    if (topJuzName) topJuzName.textContent = `الجزء ${convertToArabicNumbers(currentJuzNumber)}`;
 }
 
 // ===== رقم الجزء =====
@@ -701,6 +760,8 @@ function showIndexModal() {
     const modal = document.getElementById('indexModal');
     const list = document.getElementById('indexList');
     
+    if (!modal || !list) return;
+    
     modal.classList.remove('hidden');
     list.innerHTML = '';
     
@@ -725,14 +786,18 @@ function showIndexModal() {
 // ===== عرض البحث =====
 function showSearchModal() {
     const modal = document.getElementById('searchModal');
+    if (!modal) return;
     modal.classList.remove('hidden');
-    document.getElementById('searchInput').focus();
+    const input = document.getElementById('searchInput');
+    if (input) input.focus();
 }
 
 // ===== المواضع المحفوظة =====
 function showBookmarksModal() {
     const modal = document.getElementById('bookmarksModal');
     const list = document.getElementById('bookmarksList');
+    
+    if (!modal || !list) return;
     
     modal.classList.remove('hidden');
     list.innerHTML = '';
@@ -788,19 +853,28 @@ function goToSurah(surahNumber) {
 
 // ===== صفحة الإهداء =====
 function showDedicationPage() {
-    document.getElementById('dedicationText').innerHTML = DEDICATION_TEXT;
-    document.getElementById('dedicationPage').classList.remove('hidden');
+    const text = document.getElementById('dedicationText');
+    if (text) text.innerHTML = DEDICATION_TEXT;
+    
+    const page = document.getElementById('dedicationPage');
+    if (page) page.classList.remove('hidden');
 }
 
 function hideDedicationPage() {
-    document.getElementById('dedicationPage').classList.add('hidden');
+    const page = document.getElementById('dedicationPage');
+    if (page) page.classList.add('hidden');
 }
 
 // ===== تنفيذ البحث =====
 function performSearch() {
-    const searchType = document.getElementById('searchType').value;
-    const searchText = document.getElementById('searchInput').value.trim();
+    const searchTypeEl = document.getElementById('searchType');
+    const searchInputEl = document.getElementById('searchInput');
     const resultsContainer = document.getElementById('searchResults');
+    
+    if (!searchTypeEl || !searchInputEl || !resultsContainer) return;
+    
+    const searchType = searchTypeEl.value;
+    const searchText = searchInputEl.value.trim();
     
     resultsContainer.innerHTML = '';
     
@@ -903,7 +977,9 @@ function createSearchResultItem(ayah) {
         const pageNumber = getPageForVerse(ayah.surah, ayah.ayah);
         currentPageNumber = pageNumber;
         displayPage(currentPageNumber);
-        document.getElementById('searchModal').classList.add('hidden');
+        
+        const modal = document.getElementById('searchModal');
+        if (modal) modal.classList.add('hidden');
     });
     
     return resultItem;
