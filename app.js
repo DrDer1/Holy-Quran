@@ -1,7 +1,7 @@
 // ===== المتغيرات العامة =====
 let currentPageNumber = 1;
 let totalPages = 556;
-let currentFontSize = 1.15;
+let currentFontSize = 1.0;
 let touchStartX = 0;
 let touchEndX = 0;
 let isDragging = false;
@@ -13,8 +13,8 @@ let surahList = [];
 let db = null;
 
 // ===== إعدادات حجم الخط =====
-const FIXED_FONT_SIZE_MOBILE = 16;
-const FIXED_FONT_SIZE_DESKTOP = 20;
+const BASE_FONT_SIZE_MOBILE = 15;
+const BASE_FONT_SIZE_DESKTOP = 18;
 
 // ===== إعدادات IndexedDB =====
 const DB_NAME = 'QuranDB';
@@ -35,22 +35,16 @@ const DEDICATION_TEXT = `
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('تهيئة المصحف...');
     
-    // ===== إظهار التطبيق مباشرة =====
+    // إظهار التطبيق مباشرة
     const appContainer = document.getElementById('appContainer');
-    if (appContainer) {
-        appContainer.classList.remove('hidden');
-    }
+    if (appContainer) appContainer.classList.remove('hidden');
     
     const topBar = document.getElementById('topBar');
-    if (topBar) {
-        topBar.classList.remove('hidden');
-    }
+    if (topBar) topBar.classList.remove('hidden');
     
     // ربط زر إعادة المحاولة
     const retryBtn = document.getElementById('retryButton');
-    if (retryBtn) {
-        retryBtn.addEventListener('click', retryLoad);
-    }
+    if (retryBtn) retryBtn.addEventListener('click', retryLoad);
     
     // فتح قاعدة البيانات
     try {
@@ -67,19 +61,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // بناء قائمة السور
     buildSurahList();
-    
-    // استعادة الإعدادات
     loadSettings();
-    
-    // تهيئة الواجهة
     initializeUI();
-    
-    // تفعيل السحب
     setupSwipeGestures();
-    
-    // عرض الصفحة المطلوبة
     displayPage(currentPageNumber);
     
     let resizeTimeout;
@@ -115,7 +100,7 @@ function openDatabase() {
     });
 }
 
-// ===== حفظ البيانات في IndexedDB =====
+// ===== حفظ البيانات =====
 function saveQuranToDB(data) {
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -124,18 +109,15 @@ function saveQuranToDB(data) {
         }
         
         const transaction = db.transaction([STORE_QURAN, STORE_META], 'readwrite');
-        const quranStore = transaction.objectStore(STORE_QURAN);
-        const metaStore = transaction.objectStore(STORE_META);
-        
-        quranStore.put({ id: 'full', data: data });
-        metaStore.put({ key: 'lastUpdate', value: Date.now() });
+        transaction.objectStore(STORE_QURAN).put({ id: 'full', data: data });
+        transaction.objectStore(STORE_META).put({ key: 'lastUpdate', value: Date.now() });
         
         transaction.oncomplete = () => resolve(true);
         transaction.onerror = () => reject(transaction.error);
     });
 }
 
-// ===== قراءة البيانات من IndexedDB =====
+// ===== قراءة البيانات =====
 function getQuranFromDB() {
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -144,16 +126,11 @@ function getQuranFromDB() {
         }
         
         const transaction = db.transaction([STORE_QURAN], 'readonly');
-        const store = transaction.objectStore(STORE_QURAN);
-        const request = store.get('full');
+        const request = transaction.objectStore(STORE_QURAN).get('full');
         
         request.onsuccess = () => {
             const result = request.result;
-            if (result && result.data) {
-                resolve(result.data);
-            } else {
-                resolve(null);
-            }
+            resolve(result && result.data ? result.data : null);
         };
         
         request.onerror = () => reject(request.error);
@@ -163,30 +140,22 @@ function getQuranFromDB() {
 // ===== عرض شاشة الخطأ =====
 function showErrorScreen(message) {
     const errorMsg = document.getElementById('errorMessage');
-    if (errorMsg) {
-        errorMsg.textContent = message;
-    }
+    if (errorMsg) errorMsg.textContent = message;
     const errorScreen = document.getElementById('errorScreen');
-    if (errorScreen) {
-        errorScreen.classList.remove('hidden');
-    }
+    if (errorScreen) errorScreen.classList.remove('hidden');
     const app = document.getElementById('appContainer');
-    if (app) {
-        app.classList.add('hidden');
-    }
+    if (app) app.classList.add('hidden');
 }
 
 // ===== إعادة المحاولة =====
 async function retryLoad() {
     const errorScreen = document.getElementById('errorScreen');
-    if (errorScreen) {
-        errorScreen.classList.add('hidden');
-    }
+    if (errorScreen) errorScreen.classList.add('hidden');
     
     const success = await loadQuranData();
     
     if (!success) {
-        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم. تأكد من وجود ملف quran.json.');
+        showErrorScreen('تعذّر تحميل بيانات القرآن الكريم.');
         return;
     }
     
@@ -194,9 +163,7 @@ async function retryLoad() {
     loadSettings();
     
     const app = document.getElementById('appContainer');
-    if (app) {
-        app.classList.remove('hidden');
-    }
+    if (app) app.classList.remove('hidden');
     
     initializeUI();
     setupSwipeGestures();
@@ -208,17 +175,13 @@ async function loadQuranData() {
     try {
         let data = null;
         
-        // محاولة القراءة من IndexedDB
         try {
             data = await getQuranFromDB();
-            if (data) {
-                console.log('تم تحميل البيانات من IndexedDB');
-            }
+            if (data) console.log('تم تحميل البيانات من IndexedDB');
         } catch (error) {
             console.warn('فشل القراءة من IndexedDB:', error);
         }
         
-        // إذا لم توجد، جلبها من الشبكة
         if (!data) {
             console.log('جلب البيانات من الشبكة...');
             const response = await fetch('quran.json');
@@ -231,7 +194,6 @@ async function loadQuranData() {
             
             try {
                 await saveQuranToDB(data);
-                console.log('تم حفظ البيانات في IndexedDB');
             } catch (error) {
                 console.warn('فشل الحفظ في IndexedDB:', error);
             }
@@ -241,7 +203,6 @@ async function loadQuranData() {
             throw new Error('بيانات القرآن غير صحيحة');
         }
         
-        // استخراج quranData
         quranData = [];
         data.forEach(surah => {
             surah.verses.forEach(ayah => {
@@ -253,7 +214,6 @@ async function loadQuranData() {
             });
         });
         
-        // ===== المشاركة مع quran.js =====
         window.quranData = quranData;
         
         console.log('تم تحميل القرآن الكريم:', quranData.length, 'آية');
@@ -267,7 +227,6 @@ async function loadQuranData() {
 // ===== بناء قائمة السور =====
 function buildSurahList() {
     surahList = [];
-    
     const surahMap = {};
     
     quranData.forEach(ayah => {
@@ -282,10 +241,9 @@ function buildSurahList() {
     });
     
     surahList = Object.values(surahMap).sort((a, b) => a.number - b.number);
-    console.log('تم بناء قائمة السور:', surahList.length);
 }
 
-// ===== الحصول على الاسم المشكّل =====
+// ===== الحصول على الاسم =====
 function getSurahName(surahNumber) {
     const info = surahNames.find(s => s.number === surahNumber);
     return info ? info.name : '';
@@ -397,9 +355,7 @@ function initializeUI() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
+            if (e.key === 'Enter') performSearch();
         });
     }
     
@@ -432,11 +388,10 @@ async function updateApplication() {
         await Promise.all(registrations.map(r => r.unregister()));
         
         alert('تم تحديث التطبيق. سيُعاد التحميل الآن.');
-        
         window.location.reload(true);
     } catch (error) {
         console.error('فشل التحديث:', error);
-        alert('فشل تحديث التطبيق. يرجى المحاولة مرة أخرى.');
+        alert('فشل تحديث التطبيق.');
     }
 }
 
@@ -482,9 +437,7 @@ function setupSwipeGestures() {
     }, { passive: true });
     
     page.addEventListener('touchmove', (e) => {
-        if (isDragging) {
-            touchEndX = e.touches[0].clientX;
-        }
+        if (isDragging) touchEndX = e.touches[0].clientX;
     }, { passive: true });
     
     page.addEventListener('touchend', () => {
@@ -500,9 +453,7 @@ function setupSwipeGestures() {
     });
     
     page.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            touchEndX = e.clientX;
-        }
+        if (isDragging) touchEndX = e.clientX;
     });
     
     page.addEventListener('mouseup', () => {
@@ -513,9 +464,7 @@ function setupSwipeGestures() {
     });
     
     page.addEventListener('mouseleave', () => {
-        if (isDragging) {
-            isDragging = false;
-        }
+        if (isDragging) isDragging = false;
     });
 }
 
@@ -524,9 +473,7 @@ function handleSwipe() {
     const swipeDistance = touchEndX - touchStartX;
     const minSwipeDistance = 60;
     
-    if (Math.abs(swipeDistance) < minSwipeDistance) {
-        return;
-    }
+    if (Math.abs(swipeDistance) < minSwipeDistance) return;
     
     if (swipeDistance < 0) {
         goToNextPage();
@@ -569,73 +516,17 @@ function updatePageNumber(pageNumber) {
     pageNumberElement.textContent = convertToArabicNumbers(pageNumber);
 }
 
-// ===== ضبط حجم الخط =====
-function autoFitContent() {
+// ===== تطبيق حجم الخط الثابت (موحد لكل الصفحات) =====
+function applyFixedFontSize() {
     const content = document.getElementById('mushafContent');
     if (!content) return;
     
     const isMobile = window.innerWidth < 768;
-    const baseSize = isMobile ? FIXED_FONT_SIZE_MOBILE : FIXED_FONT_SIZE_DESKTOP;
+    const baseSize = isMobile ? BASE_FONT_SIZE_MOBILE : BASE_FONT_SIZE_DESKTOP;
     
-    let currentSize = baseSize * currentFontSize;
-    content.style.fontSize = currentSize + 'px';
-    content.style.lineHeight = '1.65';
-    content.style.justifyContent = 'flex-start';
-    
-    const availableHeight = content.clientHeight;
-    const availableWidth = content.clientWidth;
-    
-    let contentHeight = content.scrollHeight;
-    let contentWidth = content.scrollWidth;
-    
-    if (contentHeight > availableHeight || contentWidth > availableWidth) {
-        let attempts = 0;
-        const maxAttempts = 60;
-        const minSize = 9;
-        
-        while ((contentHeight > availableHeight || contentWidth > availableWidth) && 
-               attempts < maxAttempts && 
-               currentSize > minSize) {
-            currentSize -= 0.5;
-            content.style.fontSize = currentSize + 'px';
-            
-            contentHeight = content.scrollHeight;
-            contentWidth = content.scrollWidth;
-            attempts++;
-        }
-    }
-    else if (contentHeight < availableHeight * 0.85) {
-        let attempts = 0;
-        const maxAttempts = 120;
-        const maxSize = baseSize * 4.0;
-        const targetHeight = availableHeight * 0.98;
-        
-        while (contentHeight < targetHeight && 
-               currentSize < maxSize && 
-               attempts < maxAttempts) {
-            
-            const nextSize = currentSize + 0.5;
-            content.style.fontSize = nextSize + 'px';
-            
-            const newHeight = content.scrollHeight;
-            const newWidth = content.scrollWidth;
-            
-            if (newHeight > availableHeight || newWidth > availableWidth) {
-                content.style.fontSize = currentSize + 'px';
-                break;
-            }
-            
-            currentSize = nextSize;
-            contentHeight = newHeight;
-            contentWidth = newWidth;
-            attempts++;
-        }
-        
-        const finalHeight = content.scrollHeight;
-        if (finalHeight < availableHeight * 0.9) {
-            content.style.justifyContent = 'space-between';
-        }
-    }
+    content.style.fontSize = baseSize + 'px';
+    content.style.lineHeight = '1.75';
+    content.style.textAlign = 'justify';
 }
 
 // ===== عرض الصفحة =====
@@ -660,6 +551,9 @@ function displayPage(pageNumber) {
     currentSurahNumber = firstVerse.surah;
     currentJuzNumber = getJuzNumber(firstVerse.surah, firstVerse.ayah);
     updateTopBar();
+    
+    // تطبيق حجم الخط الثابت
+    applyFixedFontSize();
     
     const previousPageData = getPageData(pageNumber - 1);
     const previousLastSurah = previousPageData 
@@ -700,10 +594,6 @@ function displayPage(pageNumber) {
             spacer.style.height = '20px';
             content.appendChild(spacer);
         }
-    });
-    
-    requestAnimationFrame(() => {
-        autoFitContent();
     });
     
     if (pageVerses.length > 0) {
@@ -856,14 +746,12 @@ function saveBookmark() {
     
     bookmarks.push(bookmark);
     localStorage.setItem('quranBookmarks', JSON.stringify(bookmarks));
-    
     alert('تم حفظ الموضع الحالي');
 }
 
 // ===== الانتقال إلى سورة =====
 function goToSurah(surahNumber) {
     const pageNumber = getPageForVerse(surahNumber, 1);
-    
     if (pageNumber > 0) {
         currentPageNumber = pageNumber;
         displayPage(currentPageNumber);
