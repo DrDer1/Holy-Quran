@@ -13,19 +13,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-frame">
-            <div class="loading-ornament-top">❁</div>
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">جارٍ تحميل المصحف الكريم...</div>
-                <div class="loading-subtext">يرجى الانتظار</div>
-            </div>
-            <div class="loading-ornament-bottom">❁</div>
-        </div>
-    </div>
-
     <!-- شاشة الخطأ -->
     <div id="errorScreen" class="error-screen hidden">
         <div class="error-frame">
@@ -111,30 +98,8 @@
         <!-- منطقة عرض المصحف -->
         <main id="quranArea" class="quran-area">
             <div id="quranPage" class="quran-page">
-                <!-- الصفحة الافتتاحية -->
-                <div id="openingPage" class="opening-page">
-                    <div class="mushaf-frame">
-                        <svg class="quran-page-border" viewBox="0 0 400 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <rect x="4" y="4" width="392" height="692" fill="none" stroke="#d4af37" stroke-width="1.5" rx="2" ry="2"/>
-                            <rect x="12" y="12" width="376" height="676" fill="none" stroke="#b8860b" stroke-width="0.9" rx="1" ry="1"/>
-                            <path d="M 12 688 L 155 688" fill="none" stroke="#b8860b" stroke-width="0.9"/>
-                            <path d="M 245 688 L 388 688" fill="none" stroke="#b8860b" stroke-width="0.9"/>
-                            <g fill="none" stroke="#d4af37" stroke-width="0.9" opacity="0.9">
-                                <path d="M 155 688 Q 160 684 165 688 Q 170 692 175 688"/>
-                                <circle cx="165" cy="688" r="1.1" fill="#d4af37" stroke="none"/>
-                                <path d="M 225 688 Q 230 684 235 688 Q 240 692 245 688"/>
-                                <circle cx="235" cy="688" r="1.1" fill="#d4af37" stroke="none"/>
-                            </g>
-                        </svg>
-
-                        <div class="mushaf-content opening-content-inner">
-                            <h1 class="opening-title">الْقُرْآنُ الْكَرِيمُ</h1>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- صفحة المصحف -->
-                <div id="mushafPage" class="mushaf-page hidden">
+                <div id="mushafPage" class="mushaf-page">
                     <div class="mushaf-frame">
                         <svg class="quran-page-border" viewBox="0 0 400 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <rect x="4" y="4" width="392" height="692" fill="none" stroke="#d4af37" stroke-width="1.5" rx="2" ry="2"/>
